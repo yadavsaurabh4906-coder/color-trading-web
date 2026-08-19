@@ -11,7 +11,895 @@
     <style>
         body { background-color: #0f0f17; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         .card-bg { background-color: #1a1b26; }
-        .gold-color { color: #f7c645; }
+        .gold-color { color: #f7c645; }<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👑 ROYAL COLOR & NUMBER TRADING VIP (LIVE REALTIME SYNC)</title>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f0f17;
+            --card-bg: #1a1b26;
+            --gold: #f7c645;
+            --red: #f7768e;
+            --green: #9ece6a;
+            --violet: #bb9af7;
+            --blue: #7aa2f7;
+            --text: #c0caf5;
+        }
+
+        body {
+            font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text);
+            margin: 0; padding: 10px;
+            display: flex; justify-content: center;
+        }
+
+        .container { width: 100%; max-width: 500px; }
+        .card { background: var(--card-bg); border-radius: 10px; padding: 12px; margin-bottom: 12px; border: 1px solid #24283b; }
+        .text-center { text-align: center; }
+        
+        button {
+            border: none; border-radius: 6px; font-weight: bold; cursor: pointer; padding: 8px 12px;
+            transition: 0.2s;
+        }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-gold { background: var(--gold); color: #15161e; }
+        .btn-green { background: var(--green); color: #15161e; }
+        .btn-red { background: var(--red); color: #15161e; }
+        .btn-blue { background: var(--blue); color: #15161e; }
+        .btn-dark { background: #24283b; color: var(--text); }
+
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+
+        .progress-bar { width: 100%; height: 8px; background: #16161e; border-radius: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--blue); width: 100%; transition: width 0.3s linear; }
+
+        .num-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 8px; }
+        .num-btn { height: 45px; border-radius: 6px; font-size: 14px; font-weight: bold; color: #15161e; }
+
+        .history-badge { width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; color: #15161e; margin: 2px; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; z-index: 100; }
+        .modal-content { background: var(--card-bg); padding: 18px; border-radius: 12px; width: 95%; max-width: 550px; max-height: 85vh; overflow-y: auto; border: 1px solid var(--gold); }
+        .form-group { margin-bottom: 10px; }
+        .form-group input, .form-group select { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #24283b; background: #0f0f17; color: #fff; box-sizing: border-box; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 10px; }
+        th, td { border: 1px solid #24283b; padding: 6px 3px; text-align: center; word-break: break-all; }
+        th { background: #16161e; color: var(--gold); }
+
+        .admin-tab-btn { padding: 6px 8px; font-size: 10px; margin-right: 2px; }
+        .status-badge { padding: 2px 5px; border-radius: 4px; font-weight: bold; font-size: 9px; }
+        .status-pending { background: #e0af68; color: #15161e; }
+        .status-approved { background: var(--green); color: #15161e; }
+        .status-rejected { background: var(--red); color: #fff; }
+
+        .bet-box { background: #0f0f17; border: 1px solid #24283b; border-radius: 6px; padding: 6px; text-align: center; font-size: 11px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="text-center card">
+        <h2 style="color: var(--gold); margin:0;">👑 ROYAL TRADING VIP</h2>
+        <small style="color: #737aa2;">Color: 1.9x Profit | Number 0-9: 9x Profit</small>
+    </div>
+
+    <!-- User Status Bar -->
+    <div class="card flex-between">
+        <span id="userStatus" style="color: var(--red); font-weight: bold;">🔒 Guest Mode</span>
+        <div>
+            <button class="btn-blue" id="authBtn" onclick="openModal('loginModal')">Login / Register</button>
+            <button class="btn-red" id="logoutBtn" style="display:none;" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <!-- Wallet Balance -->
+    <div class="card text-center">
+        <small style="color: #737aa2;">AVAILABLE WALLET BALANCE</small>
+        <h1 style="color: var(--green); margin: 5px 0;" id="walletBalance">₹0</h1>
+        <div class="grid-4">
+            <button class="btn-green" onclick="openDepositModal()">⚡ + Deposit</button>
+            <button class="btn-red" onclick="openModal('withdrawModal')">💸 - Withdraw</button>
+            <button class="btn-gold" onclick="openHistoryModal()">📜 History</button>
+            <button class="btn-blue" onclick="openStatsModal()">📊 Stats</button>
+        </div>
+        <button style="width:100%; margin-top:8px; background:#25d366; color:#fff;" onclick="window.open('https://wa.me/919935088115?text=Hello%20Admin%20Support')">💬 24x7 Live Online Support</button>
+    </div>
+
+    <!-- Universal Synchronized Global Timer -->
+    <div class="card text-center">
+        <div style="font-size: 16px; font-weight: bold; color: var(--gold); margin-bottom: 5px;" id="timerLabel">⏳ Connecting Server...</div>
+        <div class="progress-bar"><div class="progress-fill" id="timerBar"></div></div>
+    </div>
+
+    <!-- Bet Selector Controls -->
+    <div class="card">
+        <small style="color: #737aa2;">SELECT BET AMOUNT (₹10 - ₹500 MAX)</small>
+        <div class="flex-between" style="margin: 8px 0;">
+            <button class="btn-red" onclick="adjustBet(-step)">➖</button>
+            <input type="number" id="betAmount" value="10" readonly style="width: 120px; text-align: center; font-size: 18px; background:#0f0f17; color:#fff; border:1px solid #24283b; border-radius:6px; padding:4px;">
+            <button class="btn-green" onclick="adjustBet(step)">➕</button>
+        </div>
+        <div class="grid-4">
+            <button class="btn-dark" onclick="setStep(10)">Step 10</button>
+            <button class="btn-dark" onclick="setStep(50)">Step 50</button>
+            <button class="btn-dark" onclick="setStep(100)">Step 100</button>
+            <button class="btn-gold" onclick="document.getElementById('betAmount').value=500">Max 500</button>
+        </div>
+    </div>
+
+    <!-- Color Choices -->
+    <div class="card text-center">
+        <small style="color: #737aa2;">CHOOSE COLOR (1.9x PROFIT)</small>
+        <div class="grid-3 flex-between" style="gap: 8px; margin-top: 5px;">
+            <button class="btn-red bet-btn" style="flex:1;" onclick="placeBet('Red', 'color')">🔴 RED (1.9x)</button>
+            <button class="btn-green bet-btn" style="flex:1;" onclick="placeBet('Green', 'color')">🟢 GREEN (1.9x)</button>
+            <button class="btn-dark bet-btn" style="flex:1; background:var(--violet);" onclick="placeBet('Violet', 'color')">🟣 VIOLET (1.9x)</button>
+        </div>
+
+        <small style="color: #737aa2; display:block; margin-top:10px;">CHOOSE NUMBER 0-9 (9x PROFIT)</small>
+        <div class="num-grid">
+            <button class="num-btn bet-btn" style="background:var(--violet);" onclick="placeBet(0, 'number')">0<br>(9x)</button>
+            <button class="num-btn bet-btn" style="background:var(--green);" onclick="placeBet(1, 'number')">1<br>(9x)</button>
+            <button class="num-btn bet-btn" style="background:var(--red);" onclick="placeBet(2, 'number')">2<br>(9x)</button>
+            <button class="num-btn bet-btn" style="background:var(--green);" onclick="placeBet(3, 'number')">3<br>(9x)</button>
+            <button class="num-btn bet-btn" style="background:var(--red);" onclick="placeBet(4, 'number')">4<br>(9x)</button>
+            <button class="num-btn bet-btn" style="background:var(--violet);" onclick="placeBet(5, 'number')">5<br>(9x)</button>
+            <button class="num-btn bet-btn" style="background:var(--red);" onclick="placeBet(6, 'number')">6<br>(9x)</button>
+            <button class="num-btn bet-btn" style="background:var(--green);" onclick="placeBet(7, 'number')">7<br>(9x)</button>
+            <button class="num-btn bet-btn" style="background:var(--red);" onclick="placeBet(8, 'number')">8<br>(9x)</button>
+            <button class="num-btn bet-btn" style="background:var(--green);" onclick="placeBet(9, 'number')">9<br>(9x)</button>
+        </div>
+        <small id="currentBetInfo" style="color: var(--blue); display:block; margin-top:8px; font-weight:bold;">🎯 Selection: None (Watching Mode)</small>
+    </div>
+
+    <!-- Results & History -->
+    <div class="card text-center">
+        <h3 style="color: var(--gold); margin:4px 0;" id="resultLabel">🎰 WINNING RESULT: --</h3>
+        <small id="resultStatus" style="color: #c0caf5;">Waiting for round to finish...</small>
+        <hr style="border-color:#24283b; margin:10px 0;">
+        <small style="color: #737aa2;">LAST 10 ROUNDS HISTORY</small>
+        <div id="historyContainer" style="margin-top:5px;"></div>
+    </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal" id="adminAuthModal">
+    <div class="modal-content text-center">
+        <h3 style="color: var(--gold);">ENTER ADMIN PIN</h3>
+        <div class="form-group">
+            <input type="password" id="adminPinInput" placeholder="Enter PIN" style="text-align: center; font-size: 18px;">
+        </div>
+        <button class="btn-green" style="width:100%;" onclick="verifyAdminPin()">Access Control Panel</button>
+        <button class="btn-red" style="width:100%; margin-top:8px;" onclick="emergencyResetPin()">🚨 Reset PIN to 1234</button>
+        <button class="btn-dark" style="width:100%; margin-top:8px;" onclick="closeModal('adminAuthModal')">Cancel</button>
+    </div>
+</div>
+
+<div class="modal" id="loginModal">
+    <div class="modal-content text-center">
+        <h3 style="color: var(--gold);">USER LOGIN</h3>
+        <div class="form-group"><input type="text" id="loginMobile" placeholder="10-Digit Mobile Number"></div>
+        <div class="form-group"><input type="password" id="loginPwd" placeholder="Password"></div>
+        <button class="btn-green" style="width:100%;" onclick="submitLogin()">Login Now</button>
+        <div style="margin-top:10px;" class="flex-between">
+            <button class="btn-dark" onclick="openModal('forgotModal'); closeModal('loginModal');">Forgot Password?</button>
+            <button class="btn-blue" onclick="openModal('registerModal'); closeModal('loginModal');">Register Here</button>
+        </div>
+        <button class="btn-dark" style="width:100%; margin-top:8px;" onclick="closeModal('loginModal')">Close</button>
+    </div>
+</div>
+
+<div class="modal" id="registerModal">
+    <div class="modal-content text-center">
+        <h3 style="color: var(--gold);">NEW USER REGISTRATION</h3>
+        <div class="form-group"><input type="text" id="regName" placeholder="Full Name"></div>
+        <div class="form-group"><input type="text" id="regMobile" placeholder="10-Digit Mobile Number"></div>
+        <div class="form-group"><input type="password" id="regPwd" placeholder="Create Password"></div>
+        <div class="form-group"><input type="password" id="regPin" placeholder="Create 4-Digit Security PIN"></div>
+        <button class="btn-blue" style="width:100%;" onclick="submitRegister()">Create Account</button>
+        <button class="btn-dark" style="width:100%; margin-top:8px;" onclick="closeModal('registerModal')">Close</button>
+    </div>
+</div>
+
+<div class="modal" id="forgotModal">
+    <div class="modal-content text-center">
+        <h3 style="color: var(--gold);">RESET PASSWORD</h3>
+        <div class="form-group"><input type="text" id="fpMobile" placeholder="Registered Mobile"></div>
+        <div class="form-group"><input type="password" id="fpPin" placeholder="Secret 4-Digit PIN"></div>
+        <div class="form-group"><input type="password" id="fpNewPwd" placeholder="New Password"></div>
+        <button class="btn-green" style="width:100%;" onclick="submitForgot()">Reset Password</button>
+        <button class="btn-dark" style="width:100%; margin-top:8px;" onclick="closeModal('forgotModal')">Close</button>
+    </div>
+</div>
+
+<div class="modal" id="depositModal">
+    <div class="modal-content text-center" style="background:#fff; color:#111;">
+        <h2 style="color:#5f259f; margin:0;">PhonePe</h2>
+        <small style="font-weight:bold;">ACCEPTED HERE</small><br>
+        <img id="qrImg" src="" alt="PhonePe QR Code" style="width:180px; height:180px; margin:10px auto; border:1px solid #ccc; display:block;">
+        <div style="font-weight:bold;" id="payeeName">SAURABH SINGH</div>
+        <div class="grid-4" style="margin:8px 0;">
+            <button class="btn-dark" onclick="updateQR(100)">₹100</button>
+            <button class="btn-dark" onclick="updateQR(500)">₹500</button>
+            <button class="btn-dark" onclick="updateQR(1000)">₹1000</button>
+            <button class="btn-dark" onclick="updateQR(2000)">₹2000</button>
+        </div>
+        <div class="form-group"><input type="number" id="depAmount" value="100" style="color:#000; border:1px solid #ccc; background:#fff;" oninput="updateQR(this.value)"></div>
+        <div class="form-group"><input type="text" id="depUTR" placeholder="Enter 12-Digit UTR Number" style="color:#000; border:1px solid #ccc; background:#fff;"></div>
+        <button class="btn-green" style="width:100%; background:#5f259f; color:#fff;" onclick="submitDeposit()">Submit Payment Reference</button>
+        <button class="btn-dark" style="width:100%; margin-top:8px;" onclick="closeModal('depositModal')">Close</button>
+    </div>
+</div>
+
+<div class="modal" id="withdrawModal">
+    <div class="modal-content text-center">
+        <h3 style="color: var(--red);">WITHDRAW TO BANK / UPI</h3>
+        <small style="color: var(--gold);">ℹ️ Processing time is up to 24 hours.</small>
+        <div class="form-group" style="margin-top:10px;">
+            <select id="wMethod"><option>UPI ID</option><option>Bank Transfer (IFSC)</option></select>
+        </div>
+        <div class="form-group"><input type="text" id="wAcc" placeholder="UPI ID / Bank A/C No"></div>
+        <div class="form-group"><input type="text" id="wIFSC" placeholder="IFSC Code (If Bank Chosen)"></div>
+        <div class="form-group"><input type="number" id="wAmount" value="100" placeholder="Amount (Min ₹100)"></div>
+        <div class="form-group"><input type="password" id="wPwd" placeholder="Login Password to Confirm"></div>
+        <button class="btn-red" style="width:100%;" onclick="submitWithdraw()">Confirm Withdrawal</button>
+        <button class="btn-dark" style="width:100%; margin-top:8px;" onclick="closeModal('withdrawModal')">Close</button>
+    </div>
+</div>
+
+<div class="modal" id="historyModal">
+    <div class="modal-content text-center">
+        <h3 style="color: var(--gold);">TRANSACTION HISTORY</h3>
+        <div style="max-height: 300px; overflow-y: auto;">
+            <table>
+                <thead><tr><th>Type</th><th>Amt</th><th>Details</th><th>Date</th></tr></thead>
+                <tbody id="historyTable"></tbody>
+            </table>
+        </div>
+        <button class="btn-dark" style="width:100%; margin-top:8px;" onclick="closeModal('historyModal')">Close</button>
+    </div>
+</div>
+
+<div class="modal" id="statsModal">
+    <div class="modal-content text-center">
+        <h3 style="color: var(--gold);">ACCOUNT ANALYTICS</h3>
+        <div id="statsContent" style="text-align: left; padding: 10px; line-height: 1.8;"></div>
+        <button class="btn-dark" style="width:100%; margin-top:8px;" onclick="closeModal('statsModal')">Close</button>
+    </div>
+</div>
+
+<!-- Detailed Admin Panel Modal -->
+<div class="modal" id="adminModal">
+    <div class="modal-content">
+        <h3 style="color: var(--gold);" class="text-center">ADMIN CONTROL PANEL</h3>
+        
+        <h4 style="color: var(--blue); margin: 5px 0 2px 0; text-align: center;">🔴🟢🟣 GLOBAL LIVE BETS BREAKDOWN</h4>
+        <div class="grid-3" style="margin-bottom: 8px;">
+            <div class="bet-box" style="color: var(--red);">🔴 RED<br><span id="betRed">₹0</span></div>
+            <div class="bet-box" style="color: var(--green);">🟢 GREEN<br><span id="betGreen">₹0</span></div>
+            <div class="bet-box" style="color: var(--violet);">🟣 VIOLET<br><span id="betViolet">₹0</span></div>
+        </div>
+
+        <small style="color: #737aa2; display: block; text-align: center;">NUMBER-WISE BETS (0-9):</small>
+        <div class="num-grid" style="margin-bottom: 8px;">
+            <div class="bet-box">0: <span id="betNum0">₹0</span></div>
+            <div class="bet-box">1: <span id="betNum1">₹0</span></div>
+            <div class="bet-box">2: <span id="betNum2">₹0</span></div>
+            <div class="bet-box">3: <span id="betNum3">₹0</span></div>
+            <div class="bet-box">4: <span id="betNum4">₹0</span></div>
+            <div class="bet-box">5: <span id="betNum5">₹0</span></div>
+            <div class="bet-box">6: <span id="betNum6">₹0</span></div>
+            <div class="bet-box">7: <span id="betNum7">₹0</span></div>
+            <div class="bet-box">8: <span id="betNum8">₹0</span></div>
+            <div class="bet-box">9: <span id="betNum9">₹0</span></div>
+        </div>
+        <div style="text-align: center; font-weight: bold; color: var(--gold); margin-bottom: 10px;" id="betTotal">💰 GRAND TOTAL BETS: ₹0</div>
+
+        <div class="grid-2">
+            <button class="btn-green" onclick="setAdminMode('anti_loss')">🛡️ SMART ANTI-LOSS (ON)</button>
+            <button class="btn-gold" onclick="setAdminMode('random')">🎲 AUTO RANDOM (OFF)</button>
+        </div>
+        <div style="margin-top:8px;" class="grid-3">
+            <button class="btn-red" onclick="setAdminMode('force_color', 'Red')">FORCE RED</button>
+            <button class="btn-green" onclick="setAdminMode('force_color', 'Green')">FORCE GREEN</button>
+            <button class="btn-dark" style="background:var(--violet);" onclick="setAdminMode('force_color', 'Violet')">FORCE VIOLET</button>
+        </div>
+        <div style="margin-top:8px;" class="num-grid">
+            <button class="btn-blue" onclick="setAdminMode('force_number', 0)">F0</button>
+            <button class="btn-blue" onclick="setAdminMode('force_number', 1)">F1</button>
+            <button class="btn-blue" onclick="setAdminMode('force_number', 2)">F2</button>
+            <button class="btn-blue" onclick="setAdminMode('force_number', 3)">F3</button>
+            <button class="btn-blue" onclick="setAdminMode('force_number', 4)">F4</button>
+            <button class="btn-blue" onclick="setAdminMode('force_number', 5)">F5</button>
+            <button class="btn-blue" onclick="setAdminMode('force_number', 6)">F6</button>
+            <button class="btn-blue" onclick="setAdminMode('force_number', 7)">F7</button>
+            <button class="btn-blue" onclick="setAdminMode('force_number', 8)">F8</button>
+            <button class="btn-blue" onclick="setAdminMode('force_number', 9)">F9</button>
+        </div>
+        <hr style="border-color:#24283b; margin:10px 0;">
+        
+        <div class="flex-between" style="margin-bottom:8px;">
+            <div>
+                <button class="btn-blue admin-tab-btn" onclick="switchAdminTab('deps')">💳 Deposits</button>
+                <button class="btn-red admin-tab-btn" onclick="switchAdminTab('wits')">💸 Withdrawals</button>
+                <button class="btn-gold admin-tab-btn" onclick="switchAdminTab('users')">👥 Users Manager</button>
+            </div>
+            <button class="btn-dark admin-tab-btn" onclick="loadAdminData()">🔄 Refresh</button>
+        </div>
+
+        <div id="adminRequests" style="max-height: 200px; overflow-y: auto;"></div>
+
+        <button class="btn-gold" style="width:100%; margin-top:12px;" onclick="changeAdminPin()">🔑 Change Admin PIN</button>
+        <button class="btn-dark" style="width:100%; margin-top:8px;" onclick="closeModal('adminModal')">Close Control Panel</button>
+    </div>
+</div>
+
+<script>
+    // 🔥 YOUR REAL FIREBASE CONFIG APPLIED HERE
+    const firebaseConfig = {
+        apiKey: "AIzaSyAcd2XMi4l2Cr_-NyXeQPjB7VvCefTk2gA",
+        authDomain: "royal-trading-9ea66.firebaseapp.com",
+        databaseURL: "https://royal-trading-9ea66-default-rtdb.firebaseio.com",
+        projectId: "royal-trading-9ea66",
+        storageBucket: "royal-trading-9ea66.firebasestorage.app",
+        messagingSenderId: "927989070567",
+        appId: "1:927989070567:web:70c69603e31d126e380042",
+        measurementId: "G-4SH4HELGZR"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let step = 10;
+    let timer = 40;
+    let currentUser = JSON.parse(sessionStorage.getItem("activeUser")) || null;
+    let activeBet = null;
+    let adminSettings = { mode: 'anti_loss', forcedNumber: null };
+    let activeAdminTab = 'deps';
+    let currentRoundId = 0;
+    let processedRounds = {};
+
+    let globalLiveBets = { color: { Red: 0, Green: 0, Violet: 0 }, number: {} };
+    for(let i=0; i<10; i++) globalLiveBets.number[i] = 0;
+
+    // 🔥 REAL-TIME UNIVERSAL TIMER SYNC
+    const ROUND_DURATION = 40;
+    db.ref(".info/serverTimeOffset").once("value", (snapshot) => {
+        const offset = snapshot.val() || 0;
+        setInterval(() => {
+            const serverTime = Date.now() + offset;
+            const currentSeconds = Math.floor(serverTime / 1000);
+            const newRoundId = Math.floor(currentSeconds / ROUND_DURATION);
+            timer = ROUND_DURATION - (currentSeconds % ROUND_DURATION);
+
+            document.getElementById("timerLabel").innerText = timer <= 10 ? 🔒 TIME LOCKED: ${timer}s : ⏳ Time Left: ${timer}s;
+            document.getElementById("timerBar").style.width = (timer / ROUND_DURATION * 100) + "%";
+            document.querySelectorAll(".bet-btn").forEach(b => b.disabled = (timer <= 10));
+
+            if (timer === ROUND_DURATION && currentRoundId !== newRoundId) {
+                currentRoundId = newRoundId;
+                evaluateGlobalRound(newRoundId);
+            }
+        }, 500);
+    });
+
+    // 🔥 REAL-TIME LIVE BETS LISTENER (COMBINES 100+ USERS' BETS IN REAL TIME)
+    db.ref("global_live_bets").on("value", (snapshot) => {
+        let bets = snapshot.val() || {};
+        globalLiveBets = { color: { Red: 0, Green: 0, Violet: 0 }, number: {} };
+        for(let i=0; i<10; i++) globalLiveBets.number[i] = 0;
+
+        Object.values(bets).forEach(uBets => {
+            if (uBets.color) {
+                globalLiveBets.color.Red += (uBets.color.Red || 0);
+                globalLiveBets.color.Green += (uBets.color.Green || 0);
+                globalLiveBets.color.Violet += (uBets.color.Violet || 0);
+            }
+            if (uBets.number) {
+                for(let i=0; i<10; i++) {
+                    globalLiveBets.number[i] += (uBets.number[i] || 0);
+                }
+            }
+        });
+        updateLiveBetDisplay();
+    });
+
+    // 🔥 REALTIME GLOBAL HISTORY SYNC
+    db.ref("global_results").limitToLast(10).on("value", (snapshot) => {
+        let data = snapshot.val() || {};
+        let list = Object.values(data).reverse();
+        if (list.length > 0) {
+            let last = list[0];
+            document.getElementById("resultLabel").innerText = 🎰 WINNING RESULT: ${last.number} (${last.color.toUpperCase()});
+        }
+        renderHistory(list);
+    });
+
+    // 🔥 SOLE ADMIN TRIGGER: Ctrl + Shift + A
+    document.addEventListener("keydown", (e) => {
+        if (e.ctrlKey && e.shiftKey && (e.key === "A" || e.key === "a")) {
+            e.preventDefault();
+            openModal("adminAuthModal");
+        }
+    });
+
+    function verifyAdminPin() {
+        let enteredPin = document.getElementById("adminPinInput").value.trim();
+        db.ref("admin_pin").once("value", (snapshot) => {
+            let currentPin = snapshot.val() || "1234";
+            if (enteredPin === currentPin) {
+                closeModal("adminAuthModal");
+                loadAdminData();
+                updateLiveBetDisplay();
+                openModal("adminModal");
+                document.getElementById("adminPinInput").value = "";
+            } else {
+                alert("Incorrect Admin PIN!");
+            }
+        });
+    }
+
+    function emergencyResetPin() {
+        db.ref("admin_pin").set("1234");
+        alert("Admin PIN reset to 1234 successfully!");
+    }
+
+    function changeAdminPin() {
+        let newPin = prompt("Enter New Admin PIN (Min 4 Digits):");
+        if (newPin !== null) {
+            newPin = newPin.trim();
+            if (newPin.length >= 4 && !isNaN(newPin)) {
+                db.ref("admin_pin").set(newPin);
+                alert(✅ Admin PIN updated successfully to: ${newPin});
+            } else {
+                alert("❌ PIN must be numbers and at least 4 digits long!");
+            }
+        }
+    }
+
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    function setStep(v) { step = v; document.getElementById("betAmount").value = v; }
+    function adjustBet(v) {
+        let el = document.getElementById("betAmount");
+        let nv = parseInt(el.value || 0) + v;
+        if (nv < 10) nv = 10; if (nv > 500) nv = 500;
+        el.value = nv;
+    }
+
+    function updateQR(amt) {
+        amt = amt || document.getElementById("depAmount").value || 100;
+        document.getElementById("depAmount").value = amt;
+        const upiId = "9935088115-2@ibl";
+        const payeeName = "SAURABH SINGH";
+        const upiLink = upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${amt}&cu=INR;
+        const qrApiUrl = https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiLink)}&color=5f259f;
+        document.getElementById("qrImg").src = qrApiUrl;
+        document.getElementById("payeeName").innerText = payeeName;
+    }
+
+    function evaluateGlobalRound(roundId) {
+        if (processedRounds[roundId]) return;
+        processedRounds[roundId] = true;
+
+        let winningNum;
+        if (adminSettings.forcedNumber !== null) {
+            winningNum = adminSettings.forcedNumber;
+            adminSettings.forcedNumber = null;
+        } else if (adminSettings.mode === 'anti_loss') {
+            let payouts = {};
+            for (let n = 0; n < 10; n++) {
+                let col = (n===1||n===3||n===7||n===9) ? "Green" : ((n===2||n===4||n===6||n===8) ? "Red" : "Violet");
+                payouts[n] = (globalLiveBets.color[col] * 1.9) + (globalLiveBets.number[n] * 9.0);
+            }
+            let minPayout = Math.min(...Object.values(payouts));
+            let bestNums = Object.keys(payouts).filter(k => payouts[k] === minPayout);
+            winningNum = parseInt(bestNums[Math.floor(Math.random() * bestNums.length)]);
+        } else {
+            winningNum = Math.floor(Math.random() * 10);
+        }
+
+        let winningColor = (winningNum===1||winningNum===3||winningNum===7||winningNum===9) ? "Green" : ((winningNum===2||winningNum===4||winningNum===6||winningNum===8) ? "Red" : "Violet");
+
+        db.ref(global_results/${roundId}).set({ number: winningNum, color: winningColor, timestamp: Date.now() });
+
+        if (activeBet && currentUser) {
+            let win = false;
+            let winnings = 0;
+            if (activeBet.type === "number" && activeBet.choice === winningNum) {
+                win = true; winnings = activeBet.amount * 9;
+            } else if (activeBet.type === "color" && activeBet.choice === winningColor) {
+                win = true; winnings = Math.round(activeBet.amount * 1.9);
+            }
+
+            if (win) {
+                db.ref(users/${currentUser.mobile}/balance).transaction((bal) => (bal || 0) + winnings);
+                document.getElementById("resultStatus").innerText = 🎉 YOU WIN! +₹${winnings - activeBet.amount} Profit;
+                document.getElementById("resultStatus").style.color = "var(--green)";
+                logTx(currentUser.mobile, "GAME_WIN", winnings, Bet on ${activeBet.choice} Won);
+            } else {
+                document.getElementById("resultStatus").innerText = 💥 YOU LOST! -₹${activeBet.amount};
+                document.getElementById("resultStatus").style.color = "var(--red)";
+                logTx(currentUser.mobile, "GAME_LOSS", activeBet.amount, Bet on ${activeBet.choice} Lost);
+            }
+            syncUserBalance();
+        } else {
+            document.getElementById("resultStatus").innerText = "No Bet Placed (Watching Mode)";
+            document.getElementById("resultStatus").style.color = "#c0caf5";
+        }
+
+        activeBet = null;
+        document.getElementById("currentBetInfo").innerText = "🎯 Selection: None (Watching Mode)";
+        db.ref("global_live_bets").remove();
+    }
+
+    function renderHistory(list) {
+        let html = "";
+        list.forEach(h => {
+            let bg = h.color === 'Red' ? '#f7768e' : (h.color === 'Green' ? '#9ece6a' : '#bb9af7');
+            html += <span class="history-badge" style="background:${bg}">${h.number}</span>;
+        });
+        document.getElementById("historyContainer").innerHTML = html || "[ No History Yet ]";
+    }
+
+    function placeBet(choice, type) {
+        if (!currentUser) return alert("Please login first!");
+        if (timer <= 10) return alert("Betting locked for last 10 seconds!");
+        let amt = parseInt(document.getElementById("betAmount").value);
+        if (amt < 10 || amt > 500) return alert("Bet amount must be ₹10 - ₹500!");
+        
+        db.ref(users/${currentUser.mobile}/balance).once("value", (snapshot) => {
+            let bal = snapshot.val() || 0;
+            if (bal < amt) return alert("Insufficient Wallet Balance!");
+
+            db.ref(users/${currentUser.mobile}/balance).set(bal - amt);
+            activeBet = { choice, type, amount: amt };
+
+            if (type === "color") {
+                db.ref(global_live_bets/${currentUser.mobile}/color/${choice}).transaction((val) => (val || 0) + amt);
+            } else {
+                db.ref(global_live_bets/${currentUser.mobile}/number/${choice}).transaction((val) => (val || 0) + amt);
+            }
+
+            document.getElementById("currentBetInfo").innerText = 🎯 Selected: ${choice} (₹${amt});
+            logTx(currentUser.mobile, "BET_PLACED", amt, Placed Bet on ${choice});
+            syncUserBalance();
+            alert("Bet Placed Successfully!");
+        });
+    }
+
+    function updateLiveBetDisplay() {
+        document.getElementById("betRed").innerText = "₹" + globalLiveBets.color.Red;
+        document.getElementById("betGreen").innerText = "₹" + globalLiveBets.color.Green;
+        document.getElementById("betViolet").innerText = "₹" + globalLiveBets.color.Violet;
+        
+        let tot = globalLiveBets.color.Red + globalLiveBets.color.Green + globalLiveBets.color.Violet;
+        for(let i=0; i<10; i++) {
+            document.getElementById(betNum${i}).innerText = "₹" + globalLiveBets.number[i];
+            tot += globalLiveBets.number[i];
+        }
+        document.getElementById("betTotal").innerText = "💰 GRAND TOTAL BETS: ₹" + tot;
+    }
+
+    function submitRegister() {
+        let name = document.getElementById("regName").value.trim();
+        let mobile = document.getElementById("regMobile").value.trim();
+        let pwd = document.getElementById("regPwd").value.trim();
+        let pin = document.getElementById("regPin").value.trim();
+
+        if (!name || mobile.length !== 10 || !pwd || pin.length !== 4) return alert("Fill all details correctly!");
+
+        db.ref(users/${mobile}).once("value", (snapshot) => {
+            if (snapshot.exists()) return alert("Mobile already registered!");
+
+            let userData = { name, mobile, pwd, pin, balance: 0 };
+            db.ref(users/${mobile}).set(userData);
+            currentUser = userData;
+            sessionStorage.setItem("activeUser", JSON.stringify(currentUser));
+            syncUserBalance();
+            closeModal("registerModal");
+            alert("Account Registered Successfully!");
+        });
+    }
+
+    function submitLogin() {
+        let mobile = document.getElementById("loginMobile").value.trim();
+        let pwd = document.getElementById("loginPwd").value.trim();
+
+        db.ref(users/${mobile}).once("value", (snapshot) => {
+            let u = snapshot.val();
+            if (u && u.pwd === pwd) {
+                currentUser = u;
+                sessionStorage.setItem("activeUser", JSON.stringify(currentUser));
+                syncUserBalance();
+                closeModal("loginModal");
+                alert(Welcome back, ${currentUser.name}!);
+            } else {
+                alert("Invalid Mobile or Password!");
+            }
+        });
+    }
+
+    function syncUserBalance() {
+        if (!currentUser) return updateUserUI();
+        db.ref(users/${currentUser.mobile}).on("value", (snapshot) => {
+            let u = snapshot.val();
+            if (u) {
+                currentUser = u;
+                sessionStorage.setItem("activeUser", JSON.stringify(currentUser));
+                updateUserUI();
+            }
+        });
+    }
+
+    function submitForgot() {
+        let mob = document.getElementById("fpMobile").value.trim();
+        let pin = document.getElementById("fpPin").value.trim();
+        let newPwd = document.getElementById("fpNewPwd").value.trim();
+
+        db.ref(users/${mob}).once("value", (snapshot) => {
+            let u = snapshot.val();
+            if (u && u.pin === pin) {
+                db.ref(users/${mob}/pwd).set(newPwd);
+                alert("Password reset successfully!");
+                closeModal("forgotModal");
+            } else {
+                alert("Incorrect Mobile or Security PIN!");
+            }
+        });
+    }
+
+    function logout() {
+        sessionStorage.removeItem("activeUser");
+        currentUser = null;
+        updateUserUI();
+    }
+
+    function updateUserUI() {
+        if (currentUser) {
+            document.getElementById("userStatus").innerText = User: ${currentUser.name} (+91 ${currentUser.mobile});
+            document.getElementById("userStatus").style.color = "var(--green)";
+            document.getElementById("walletBalance").innerText = "₹" + (currentUser.balance || 0);
+            document.getElementById("authBtn").style.display = "none";
+            document.getElementById("logoutBtn").style.display = "inline-block";
+        } else {
+            document.getElementById("userStatus").innerText = "🔒 Guest Mode";
+            document.getElementById("userStatus").style.color = "var(--red)";
+            document.getElementById("walletBalance").innerText = "₹0";
+            document.getElementById("authBtn").style.display = "inline-block";
+            document.getElementById("logoutBtn").style.display = "none";
+        }
+    }
+
+    function openDepositModal() {
+        if (!currentUser) return alert("Please login first!");
+        openModal("depositModal");
+        updateQR(100);
+    }
+
+    function submitDeposit() {
+        let amt = parseInt(document.getElementById("depAmount").value);
+        let utr = document.getElementById("depUTR").value.trim();
+        if (!amt || utr.length !== 12) return alert("Enter valid 12-digit UTR!");
+
+        let depData = { id: Date.now(), name: currentUser.name, mobile: currentUser.mobile, amount: amt, utr, status: "PENDING", date: new Date().toLocaleString() };
+        db.ref(deposits/${depData.id}).set(depData);
+        logTx(currentUser.mobile, "DEPOSIT_PENDING", amt, Submitted UTR: ${utr});
+        closeModal("depositModal");
+        alert("Deposit reference submitted successfully!");
+    }
+
+    function submitWithdraw() {
+        if (!currentUser) return alert("Please login first!");
+        let amt = parseInt(document.getElementById("wAmount").value);
+        let pwd = document.getElementById("wPwd").value;
+        let acc = document.getElementById("wAcc").value;
+
+        if (amt < 100 || amt > currentUser.balance) return alert("Invalid amount or low balance!");
+        if (pwd !== currentUser.pwd) return alert("Incorrect password!");
+
+        db.ref(users/${currentUser.mobile}/balance).set(currentUser.balance - amt);
+
+        let witData = { id: Date.now(), name: currentUser.name, mobile: currentUser.mobile, amount: amt, acc, status: "PENDING", date: new Date().toLocaleString() };
+        db.ref(withdrawals/${witData.id}).set(witData);
+
+        logTx(currentUser.mobile, "WITHDRAW_REQ", amt, Pending to ${acc});
+        syncUserBalance();
+        closeModal("withdrawModal");
+        alert("Withdrawal submitted successfully!");
+    }
+
+    function logTx(mobile, type, amount, details) {
+        db.ref(transactions/${mobile}).push({ type, amount, details, date: new Date().toLocaleString() });
+    }
+
+    function openHistoryModal() {
+        if (!currentUser) return alert("Please login first!");
+        db.ref(transactions/${currentUser.mobile}).once("value", (snapshot) => {
+            let data = snapshot.val() || {};
+            let txs = Object.values(data).reverse();
+            let html = "";
+            txs.forEach(t => {
+                html += <tr><td>${t.type}</td><td>₹${t.amount}</td><td>${t.details}</td><td>${t.date}</td></tr>;
+            });
+            document.getElementById("historyTable").innerHTML = html || "<tr><td colspan='4'>No Transactions Yet</td></tr>";
+            openModal("historyModal");
+        });
+    }
+
+    function openStatsModal() {
+        if (!currentUser) return alert("Please login first!");
+        db.ref(transactions/${currentUser.mobile}).once("value", (snapshot) => {
+            let data = snapshot.val() || {};
+            let txs = Object.values(data);
+            let dep = txs.filter(t => t.type === "DEPOSIT_SUCCESS").reduce((a,b) => a + b.amount, 0);
+            let wit = txs.filter(t => t.type === "WITHDRAW_REQ").reduce((a,b) => a + b.amount, 0);
+            let win = txs.filter(t => t.type === "GAME_WIN").reduce((a,b) => a + b.amount, 0);
+            let loss = txs.filter(t => t.type === "GAME_LOSS").reduce((a,b) => a + b.amount, 0);
+
+            document.getElementById("statsContent").innerHTML = `
+                <b>Total Deposits Approved:</b> ₹${dep}<br>
+                <b>Total Withdrawals Requested:</b> ₹${wit}<br>
+                <b>Total Amount Won:</b> ₹${win}<br>
+                <b>Total Amount Lost:</b> ₹${loss}
+            `;
+            openModal("statsModal");
+        });
+    }
+
+    function setAdminMode(mode, val) {
+        if (mode === 'anti_loss' || mode === 'random') adminSettings.mode = mode;
+        if (mode === 'force_color') {
+            adminSettings.forcedNumber = val === "Red" ? 2 : (val === "Green" ? 1 : 0);
+        }
+        if (mode === 'force_number') adminSettings.forcedNumber = val;
+        alert("Admin Override Set!");
+    }
+
+    function switchAdminTab(tab) {
+        activeAdminTab = tab;
+        loadAdminData();
+    }
+
+    function loadAdminData() {
+        let container = document.getElementById("adminRequests");
+        if (activeAdminTab === 'deps') {
+            db.ref("deposits").once("value", (snapshot) => {
+                let data = snapshot.val() || {};
+                let deps = Object.values(data);
+                if (deps.length === 0) {
+                    container.innerHTML = "<small style='color:#737aa2;'>No Deposit Requests Recorded</small>";
+                    return;
+                }
+                let html = "<table><thead><tr><th>User Info</th><th>Amount</th><th>UTR Number</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody>";
+                deps.forEach(d => {
+                    let badgeClass = d.status === 'PENDING' ? 'status-pending' : (d.status === 'APPROVED' ? 'status-approved' : 'status-rejected');
+                    let actionBtn = d.status === 'PENDING' ? <button class="btn-green" style="padding:2px 4px; font-size:9px;" onclick="approveDep('${d.id}')">Approve</button> : '✓ Done';
+                    
+                    html += `<tr>
+                        <td><b>${d.name}</b><br><small style="color:#7aa2f7;">+91 ${d.mobile}</small></td>
+                        <td style="color:var(--green); font-weight:bold;">₹${d.amount}</td>
+                        <td><small>${d.utr}</small></td>
+                        <td><span class="status-badge ${badgeClass}">${d.status}</span></td>
+                        <td><small>${d.date}</small></td>
+                        <td>${actionBtn}</td>
+                    </tr>`;
+                });
+                html += "</tbody></table>";
+                container.innerHTML = html;
+            });
+        } else if (activeAdminTab === 'wits') {
+            db.ref("withdrawals").once("value", (snapshot) => {
+                let data = snapshot.val() || {};
+                let wits = Object.values(data);
+                if (wits.length === 0) {
+                    container.innerHTML = "<small style='color:#737aa2;'>No Withdrawal Requests Recorded</small>";
+                    return;
+                }
+                let html = "<table><thead><tr><th>User Info</th><th>Amount</th><th>Account Details</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody>";
+                wits.forEach(w => {
+                    let badgeClass = w.status === 'PENDING' ? 'status-pending' : (w.status === 'APPROVED' ? 'status-approved' : 'status-rejected');
+                    let actionBtn = w.status === 'PENDING' ? `
+                        <button class="btn-green" style="padding:2px 4px; font-size:9px;" onclick="processWithdraw('${w.id}', 'approve')">Paid</button>
+                        <button class="btn-red" style="padding:2px 4px; font-size:9px;" onclick="processWithdraw('${w.id}', 'reject')">Reject</button>
+                    ` : '✓ Done';
+                    
+                    html += `<tr>
+                        <td><b>${w.name}</b><br><small style="color:#7aa2f7;">+91 ${w.mobile}</small></td>
+                        <td style="color:var(--red); font-weight:bold;">₹${w.amount}</td>
+                        <td><small>${w.acc}</small></td>
+                        <td><span class="status-badge ${badgeClass}">${w.status}</span></td>
+                        <td><small>${w.date}</small></td>
+                        <td>${actionBtn}</td>
+                    </tr>`;
+                });
+                html += "</tbody></table>";
+                container.innerHTML = html;
+            });
+        } else if (activeAdminTab === 'users') {
+            db.ref("users").once("value", (snapshot) => {
+                let users = snapshot.val() || {};
+                let userKeys = Object.keys(users);
+                if (userKeys.length === 0) {
+                    container.innerHTML = "<small style='color:#737aa2;'>No Registered Users Found</small>";
+                    return;
+                }
+                let html = "<table><thead><tr><th>Name</th><th>Mobile</th><th>Balance</th><th>Action</th></tr></thead><tbody>";
+                userKeys.forEach(mob => {
+                    let u = users[mob];
+                    html += `<tr>
+                        <td><b>${u.name}</b></td>
+                        <td>+91 ${u.mobile}</td>
+                        <td style="color:var(--green); font-weight:bold;">₹${u.balance || 0}</td>
+                        <td>
+                            <button class="btn-gold" style="padding:2px 6px; font-size:9px;" onclick="adminResetUserPassword('${u.mobile}')">Reset Pass</button>
+                        </td>
+                    </tr>`;
+                });
+                html += "</tbody></table>";
+                container.innerHTML = html;
+            });
+        }
+    }
+
+    function adminResetUserPassword(mobile) {
+        let newPwd = prompt(Enter New Password for (+91 ${mobile}):);
+        if (newPwd && newPwd.trim() !== "") {
+            db.ref(users/${mobile}/pwd).set(newPwd.trim());
+            alert(Password updated successfully to: ${newPwd.trim()});
+            loadAdminData();
+        }
+    }
+
+    function approveDep(id) {
+        db.ref(deposits/${id}).once("value", (snapshot) => {
+            let d = snapshot.val();
+            if (d && d.status === 'PENDING') {
+                db.ref(deposits/${id}/status).set("APPROVED");
+                db.ref(users/${d.mobile}/balance).transaction((bal) => (bal || 0) + d.amount);
+                logTx(d.mobile, "DEPOSIT_SUCCESS", d.amount, Approved UTR: ${d.utr});
+                alert("Deposit Approved! Cash added to user balance.");
+                loadAdminData();
+            }
+        });
+    }
+
+    function processWithdraw(id, action) {
+        db.ref(withdrawals/${id}).once("value", (snapshot) => {
+            let w = snapshot.val();
+            if (w && w.status === 'PENDING') {
+                if (action === 'approve') {
+                    db.ref(withdrawals/${id}/status).set("APPROVED");
+                    logTx(w.mobile, "WITHDRAW_SUCCESS", w.amount, Approved to ${w.acc});
+                    alert(Withdrawal Approved! Pay ₹${w.amount} to user.);
+                } else {
+                    db.ref(withdrawals/${id}/status).set("REJECTED");
+                    db.ref(users/${w.mobile}/balance).transaction((bal) => (bal || 0) + w.amount);
+                    logTx(w.mobile, "WITHDRAW_REFUND", w.amount, "Withdrawal Rejected & Refunded");
+                    alert(Withdrawal Rejected! ₹${w.amount} refunded to user balance.);
+                }
+                loadAdminData();
+            }
+        });
+    }
+
+    syncUserBalance();
+</script>
+
+</body>
+</html>
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #0f0f17; }
