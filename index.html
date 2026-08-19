@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Trading Game</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background: #121212; color: white; margin: 0; padding: 20px; }
+        .card { background: #1e1e1e; padding: 20px; border-radius: 12px; max-width: 400px; margin: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .btn { padding: 12px 20px; margin: 5px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: white; }
+        .red { background: #e53935; }
+        .green { background: #43a047; }
+        .violet { background: #8e24aa; }
+        .num-btn { background: #333; width: 50px; height: 50px; font-size: 18px; margin: 4px; border-radius: 50%; border: 1px solid #555; color: white; }
+        #timer { font-size: 32px; color: #ffeb3b; font-weight: bold; margin: 15px 0; }
+        input { padding: 10px; width: 80%; margin: 10px 0; border-radius: 6px; border: 1px solid #444; background: #222; color: white; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Color Trading</h2>
+    <div id="timer">00:30</div>
+    <h3>Result: <span id="result">-</span></h3>
+
+    <input type="number" id="betAmount" placeholder="Enter Amount (₹)" value="10">
+
+    <h4>Select Color</h4>
+    <button class="btn green" onclick="placeBet('color', 'Green')">Green</button>
+    <button class="btn violet" onclick="placeBet('color', 'Violet')">Violet</button>
+    <button class="btn red" onclick="placeBet('color', 'Red')">Red</button>
+
+    <h4>Select Number</h4>
+    <div>
+        <button class="num-btn" onclick="placeBet('number', '0')">0</button>
+        <button class="num-btn" onclick="placeBet('number', '1')">1</button>
+        <button class="num-btn" onclick="placeBet('number', '2')">2</button>
+        <button class="num-btn" onclick="placeBet('number', '3')">3</button>
+        <button class="num-btn" onclick="placeBet('number', '4')">4</button>
+        <br>
+        <button class="num-btn" onclick="placeBet('number', '5')">5</button>
+        <button class="num-btn" onclick="placeBet('number', '6')">6</button>
+        <button class="num-btn" onclick="placeBet('number', '7')">7</button>
+        <button class="num-btn" onclick="placeBet('number', '8')">8</button>
+        <button class="num-btn" onclick="placeBet('number', '9')">9</button>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    const SUPABASE_URL = "https://gbyrdjwcbfsdibnrvqzz.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_KyF98L8mcaHentW4gqhB1Q_2bAlCMaF";
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let timeLeft = 30;
+    
+    async function placeBet(type, choice) {
+        if(timeLeft <= 5) { alert("Betting closed for this round!"); return; }
+        const amount = document.getElementById('betAmount').value;
+        if(!amount || amount <= 0) { alert("Enter valid amount"); return; }
+
+        await _supabase.from('live_bets').insert([{ mobile: 'guest', choice_type: type, choice: choice, amount: parseInt(amount) }]);
+        alert(Bet placed on ${choice} for ₹${amount});
+    }
+
+    setInterval(async () => {
+        timeLeft--;
+        if(timeLeft < 0) timeLeft = 30;
+        document.getElementById('timer').innerText = 00:${timeLeft < 10 ? '0' : ''}${timeLeft};
+
+        if(timeLeft === 0) {
+            let res = await fetch('/api/calculate-result');
+            let data = await res.json();
+            if(data.success) {
+                document.getElementById('result').innerText = data.winningNumber;
+            }
+        }
+    }, 1000);
+</script>
+
+</body>
+</html>
