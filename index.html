@@ -1,4 +1,26 @@
-<!DOCTYPE html>
+[12:32 am, 20/08/2026] Saurabh Yadav: const express = require('express');
+const { createClient } = require('@supabase/supabase-js');
+const path = require('path');
+const cors = require('cors');
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+app.use(express.static(__dirname));
+
+// 🔗 Supabase Connection
+const SUPABASE_URL = "https://gbyrdjwcbfsdibnrvqzz.supabase.co";
+const SUPABASE_KEY = "sb_publishable_KyF98L8mcaHentW4gqhB1Q_2bAlCMaF"; 
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// 🧠 Anti-Loss Calculated Minimum Payout Logic
+app.get('/api/calculate-result', async (req, res) => {
+    try {
+        const { data: bets, error } = await supabase.from('live_bets').select('*');
+        if (error) throw error;
+
+        let totalColor = { Red: 0, Green: 0, Violet: 0 };…
+[12:35 am, 20/08/2026] Saurabh Yadav: <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -11,38 +33,93 @@
         .red { background: #e53935; }
         .green { background: #43a047; }
         .violet { background: #8e24aa; }
-        .num-btn { background: #333; width: 50px; height: 50px; font-size: 18px; margin: 4px; border-radius: 50%; border: 1px solid #555; color: white; }
-        #timer { font-size: 32px; color: #ffeb3b; font-weight: bold; margin: 15px 0; }
-        input { padding: 10px; width: 80%; margin: 10px 0; border-radius: 6px; border: 1px solid #444; background: #222; color: white; text-align: center; }
+        .num-btn { background: #333; width: 50…
+[12:50 am, 20/08/2026] Saurabh Yadav: color-trading-h6wg1ljt0-saurabh-dev.vercel.app
+[1:08 am, 20/08/2026] Saurabh Yadav: const express = require('express');
+const { createClient } = require('@supabase/supabase-js');
+const path = require('path');
+const cors = require('cors');
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+app.use(express.static(__dirname));
+
+const SUPABASE_URL = "https://gbyrdjwcbfsdibnrvqzz.supabase.co";
+const SUPABASE_KEY = "sb_publishable_KyF98L8mcaHentW4gqhB1Q_2bAlCMaF"; 
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// 🧠 Anti-Loss Calculation (Number = 9x | Color = 1.9x)
+app.get('/api/calculate-result', async (req, res) => {
+    try {
+        const { data: bets, error } = await supabase.from('live_bets').select('*');
+        if (error) throw error;
+
+        let colorBets = { Red: 0, Green: 0, Violet: 0 };
+        let numbe…
+[1:12 am, 20/08/2026] Saurabh Yadav: <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Royal Color Trading VIP</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Poppins', Arial, sans-serif; }
+        body { background: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 15px; }
+        .container { background: #1e293b; padding: 25px; border-radius: 20px; width: 100%; max-width: 450px; text-align: center; border: 1px solid #334155; }
+        .timer-box { background: linear-gradient(135deg, #1e1b4b, #312e81); border: 2px solid #6366f1; border-radius: 12px; padding: 15px; margin-bottom: 20px; }
+        .timer-title { font-size: 14px; color: #a5b4fc; text-transform: uppercase; }
+        #timer { font-size: 42px; font-weight: 800; color: #38bdf8; font-family: monospace; }
+        .result-box { background: #0f172a; border-radius: 10px; padding: 10px; margin-bottom: 20px; font-size: 18px; font-weight: bold; }
+        #result { font-size: 24px; color: #facc15; }
+        .input-group { margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #4ade80; font-size: 20px; font-weight: bold; text-align: center; outline: none; }
+        .color-btns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .btn-color { padding: 15px; border: none; border-radius: 10px; font-size: 15px; font-weight: bold; color: white; cursor: pointer; }
+        .green { background: linear-gradient(135deg, #16a34a, #22c55e); }
+        .violet { background: linear-gradient(135deg, #7c3aed, #a855f7); }
+        .red { background: linear-gradient(135deg, #dc2626, #ef4444); }
+        .number-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 20px; }
+        .btn-num { width: 100%; padding: 10px 0; border-radius: 10px; border: 2px solid #475569; background: #334155; color: white; font-size: 14px; font-weight: bold; cursor: pointer; }
+        .btn-num span { display: block; font-size: 10px; color: #38bdf8; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>Color Trading</h2>
-    <div id="timer">00:30</div>
-    <h3>Result: <span id="result">-</span></h3>
+<div class="container">
+    <div class="timer-box">
+        <div class="timer-title">Count Down</div>
+        <div id="timer">00:30</div>
+    </div>
 
-    <input type="number" id="betAmount" placeholder="Enter Amount (₹)" value="10">
+    <div class="result-box">
+        Previous Result: <span id="result">-</span>
+    </div>
 
-    <h4>Select Color</h4>
-    <button class="btn green" onclick="placeBet('color', 'Green')">Green</button>
-    <button class="btn violet" onclick="placeBet('color', 'Violet')">Violet</button>
-    <button class="btn red" onclick="placeBet('color', 'Red')">Red</button>
+    <div class="input-group">
+        <label>Contract Money (₹)</label>
+        <input type="number" id="betAmount" value="10" min="10">
+    </div>
 
-    <h4>Select Number</h4>
-    <div>
-        <button class="num-btn" onclick="placeBet('number', '0')">0</button>
-        <button class="num-btn" onclick="placeBet('number', '1')">1</button>
-        <button class="num-btn" onclick="placeBet('number', '2')">2</button>
-        <button class="num-btn" onclick="placeBet('number', '3')">3</button>
-        <button class="num-btn" onclick="placeBet('number', '4')">4</button>
-        <br>
-        <button class="num-btn" onclick="placeBet('number', '5')">5</button>
-        <button class="num-btn" onclick="placeBet('number', '6')">6</button>
-        <button class="num-btn" onclick="placeBet('number', '7')">7</button>
-        <button class="num-btn" onclick="placeBet('number', '8')">8</button>
-        <button class="num-btn" onclick="placeBet('number', '9')">9</button>
+    <p style="font-size: 12px; color: #94a3b8;">SELECT COLOR (1.9x PROFIT)</p>
+    <div class="color-btns">
+        <button class="btn-color green" onclick="placeBet('color', 'Green')">Green 1.9x</button>
+        <button class="btn-color violet" onclick="placeBet('color', 'Violet')">Violet 1.9x</button>
+        <button class="btn-color red" onclick="placeBet('color', 'Red')">Red 1.9x</button>
+    </div>
+
+    <p style="font-size: 12px; color: #94a3b8;">SELECT NUMBER 0-9 (9x PROFIT)</p>
+    <div class="number-grid">
+        <button class="btn-num" onclick="placeBet('number', '0')">0 <span>9x</span></button>
+        <button class="btn-num" onclick="placeBet('number', '1')">1 <span>9x</span></button>
+        <button class="btn-num" onclick="placeBet('number', '2')">2 <span>9x</span></button>
+        <button class="btn-num" onclick="placeBet('number', '3')">3 <span>9x</span></button>
+        <button class="btn-num" onclick="placeBet('number', '4')">4 <span>9x</span></button>
+        <button class="btn-num" onclick="placeBet('number', '5')">5 <span>9x</span></button>
+        <button class="btn-num" onclick="placeBet('number', '6')">6 <span>9x</span></button>
+        <button class="btn-num" onclick="placeBet('number', '7')">7 <span>9x</span></button>
+        <button class="btn-num" onclick="placeBet('number', '8')">8 <span>9x</span></button>
+        <button class="btn-num" onclick="placeBet('number', '9')">9 <span>9x</span></button>
     </div>
 </div>
 
@@ -52,28 +129,40 @@
     const SUPABASE_KEY = "sb_publishable_KyF98L8mcaHentW4gqhB1Q_2bAlCMaF";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    let timeLeft = 30;
-    
+    function getGlobalTimeLeft() {
+        const now = Math.floor(Date.now() / 1000);
+        return 30 - (now % 30);
+    }
+
     async function placeBet(type, choice) {
+        let timeLeft = getGlobalTimeLeft();
         if(timeLeft <= 5) { alert("Betting closed for this round!"); return; }
         const amount = document.getElementById('betAmount').value;
         if(!amount || amount <= 0) { alert("Enter valid amount"); return; }
 
         await _supabase.from('live_bets').insert([{ mobile: 'guest', choice_type: type, choice: choice, amount: parseInt(amount) }]);
-        alert(Bet placed on ${choice} for ₹${amount});
+        alert(Bet successful: ₹${amount} on ${choice});
     }
 
+    let hasCalculated = false;
+
     setInterval(async () => {
-        timeLeft--;
-        if(timeLeft < 0) timeLeft = 30;
+        let timeLeft = getGlobalTimeLeft();
         document.getElementById('timer').innerText = 00:${timeLeft < 10 ? '0' : ''}${timeLeft};
 
-        if(timeLeft === 0) {
-            let res = await fetch('/api/calculate-result');
-            let data = await res.json();
-            if(data.success) {
-                document.getElementById('result').innerText = data.winningNumber;
-            }
+        if(timeLeft === 30) {
+            hasCalculated = false;
+        }
+
+        if(timeLeft === 1 && !hasCalculated) {
+            hasCalculated = true;
+            try {
+                let res = await fetch('/api/calculate-result');
+                let data = await res.json();
+                if(data.success) {
+                    document.getElementById('result').innerText = data.winningNumber;
+                }
+            } catch(e) { console.log(e); }
         }
     }, 1000);
 </script>
