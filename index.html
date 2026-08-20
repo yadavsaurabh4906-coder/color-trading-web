@@ -205,20 +205,30 @@
     </div>
 </div>
 
+<!-- ⚡ DEPOSIT MODAL UPDATED (₹1 - ₹5000 ALLOWED) -->
 <div class="modal" id="depositModal">
     <div class="modal-content text-center" style="background:#fff; color:#111;">
         <h2 style="color:#5f259f; margin:0;">PhonePe</h2>
-        <small style="font-weight:bold;">ACCEPTED HERE</small><br>
+        <small style="font-weight:bold;">ACCEPTED HERE (₹1 - ₹5000)</small><br>
         <img id="qrImg" src="" alt="PhonePe QR Code" style="width:180px; height:180px; margin:10px auto; border:1px solid #ccc; display:block;">
         <div style="font-weight:bold;" id="payeeName">SAURABH SINGH</div>
-        <div class="grid-4" style="margin:8px 0;">
+        
+        <!-- Quick Deposit Amounts (₹1 to ₹5000) -->
+        <div class="grid-3" style="margin:8px 0;">
+            <button class="btn-dark" onclick="updateQR(1)">₹1</button>
             <button class="btn-dark" onclick="updateQR(100)">₹100</button>
             <button class="btn-dark" onclick="updateQR(500)">₹500</button>
             <button class="btn-dark" onclick="updateQR(1000)">₹1000</button>
             <button class="btn-dark" onclick="updateQR(2000)">₹2000</button>
+            <button class="btn-dark" onclick="updateQR(5000)">₹5000</button>
         </div>
-        <div class="form-group"><input type="number" id="depAmount" value="100" style="color:#000; border:1px solid #ccc; background:#fff;" oninput="updateQR(this.value)"></div>
-        <div class="form-group"><input type="text" id="depUTR" placeholder="Enter 12-Digit UTR Number" style="color:#000; border:1px solid #ccc; background:#fff;"></div>
+        
+        <div class="form-group">
+            <input type="number" id="depAmount" value="100" min="1" max="5000" placeholder="Amount (₹1 - ₹5000)" style="color:#000; border:1px solid #ccc; background:#fff;" oninput="updateQR(this.value)">
+        </div>
+        <div class="form-group">
+            <input type="text" id="depUTR" placeholder="Enter 12-Digit UTR Number" style="color:#000; border:1px solid #ccc; background:#fff;">
+        </div>
         <button class="btn-green" style="width:100%; background:#5f259f; color:#fff;" onclick="submitDeposit()">Submit Payment Reference</button>
         <button class="btn-dark" style="width:100%; margin-top:8px;" onclick="closeModal('depositModal')">Close</button>
     </div>
@@ -376,7 +386,7 @@
     // 🔒 PRESS TAB KEY TO OPEN ADMIN PIN POPUP
     document.addEventListener("keydown", (e) => {
         if (e.key === "Tab") {
-            e.preventDefault(); // Browser default tab navigation disable karega
+            e.preventDefault();
             openModal("adminAuthModal");
         }
     });
@@ -481,7 +491,9 @@
     }
 
     function updateQR(amt) {
-        amt = amt || document.getElementById("depAmount").value || 100;
+        amt = parseInt(amt) || document.getElementById("depAmount").value || 1;
+        if (amt < 1) amt = 1;
+        if (amt > 5000) amt = 5000;
         document.getElementById("depAmount").value = amt;
         const upiId = "9935088115-2@ibl";
         const payeeName = "SAURABH SINGH";
@@ -500,22 +512,18 @@
         let winningColor;
 
         if (adminSettings.forcedNumber !== null) {
-            // Manual Admin Override
             winningNum = adminSettings.forcedNumber;
             adminSettings.forcedNumber = null;
             winningColor = (winningNum === 1 || winningNum === 3 || winningNum === 7 || winningNum === 9) ? "Green" : 
                            ((winningNum === 2 || winningNum === 4 || winningNum === 6 || winningNum === 8) ? "Red" : "Violet");
         } else if (adminSettings.mode === 'anti_loss') {
-            // 🟢 ANTI-LOSS IS ON: Calculate Lowest Payout
             let payouts = {};
 
             for (let n = 0; n < 10; n++) {
                 let totalPayoutForThisNumber = 0;
 
-                // 1. Direct Number Bet Payout (9x)
                 totalPayoutForThisNumber += (globalLiveBets.number[n] || 0) * 9.0;
 
-                // 2. Color Bet Payout Calculation
                 if (n === 1 || n === 3 || n === 7 || n === 9) {
                     totalPayoutForThisNumber += (globalLiveBets.color["Green"] || 0) * 1.9;
                 } else if (n === 2 || n === 4 || n === 6 || n === 8) {
@@ -531,7 +539,6 @@
                 payouts[n] = totalPayoutForThisNumber;
             }
 
-            // Find lowest total payout
             let minPayout = Math.min(...Object.values(payouts));
             let bestNums = Object.keys(payouts).filter(k => payouts[k] === minPayout);
             winningNum = parseInt(bestNums[Math.floor(Math.random() * bestNums.length)]);
@@ -539,16 +546,13 @@
             winningColor = (winningNum === 1 || winningNum === 3 || winningNum === 7 || winningNum === 9) ? "Green" : 
                            ((winningNum === 2 || winningNum === 4 || winningNum === 6 || winningNum === 8) ? "Red" : "Violet");
         } else {
-            // 🔴 ANTI-LOSS IS OFF (Pure Random Mode)
             winningNum = Math.floor(Math.random() * 10);
             winningColor = (winningNum === 1 || winningNum === 3 || winningNum === 7 || winningNum === 9) ? "Green" : 
                            ((winningNum === 2 || winningNum === 4 || winningNum === 6 || winningNum === 8) ? "Red" : "Violet");
         }
 
-        // Save Result to Database
         db.ref(`global_results/${roundId}`).set({ number: winningNum, color: winningColor, timestamp: Date.now() });
 
-        // 🎯 USER RESULT EVALUATION
         if (activeBet && currentUser) {
             let win = false;
             let winnings = 0;
@@ -750,13 +754,14 @@
         updateQR(100);
     }
 
+    // ⚡ SUBMIT DEPOSIT WITH ₹1 - ₹5000 LIMIT VALIDATION
     async function submitDeposit() {
         if (!currentUser) return alert("Please login first!");
 
         let amt = parseInt(document.getElementById("depAmount").value);
         let utr = document.getElementById("depUTR").value.trim();
 
-        if (!amt || amt < 100) return alert("Minimum deposit is ₹100");
+        if (!amt || amt < 1 || amt > 5000) return alert("❌ Deposit amount must be between ₹1 and ₹5000!");
         if (!utr || utr.length !== 12 || isNaN(utr)) {
             return alert("❌ Enter valid 12-digit numeric UTR!");
         }
@@ -902,7 +907,6 @@
         });
     }
 
-    // 🟢 / 🔴 MODE TOGGLE SWITCHER INSIDE PANEL
     function setAdminMode(mode, val) {
         if (mode === 'anti_loss' || mode === 'random') {
             adminSettings.mode = mode;
