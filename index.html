@@ -338,7 +338,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // 🔒 Synchronous SHA-256 Hashing with CryptoJS
+    // 🔒 Universal SHA-256 Hashing for Passwords (Works everywhere)
     function hashText(text) {
         return CryptoJS.SHA256(text.toString().trim()).toString();
     }
@@ -706,6 +706,7 @@
         updateQR(100);
     }
 
+    // 🔒 SMART UTR PROTECTION: Allows Original UTR if Fake Submission is Rejected
     async function submitDeposit() {
         if (!currentUser) return alert("Please login first!");
 
@@ -825,6 +826,30 @@
         loadAdminData();
     }
 
+    // 👑 ADMIN FUNCTION TO MODIFY BALANCE MANUALLY (+ or -)
+    function adminModifyBalance(mobile) {
+        let amountStr = prompt(`यूज़र (+91 ${mobile}) का बैलेंस बदलने के लिए राशि दर्ज करें:\n(उदाहरण: +500 जोड़ने के लिए 500 लिखें, घटाने के लिए -200 लिखें)`);
+        
+        if (amountStr !== null && amountStr.trim() !== "") {
+            let amt = parseFloat(amountStr.trim());
+            if (!isNaN(amt)) {
+                db.ref(`users/${mobile}/balance`).transaction((currentBal) => {
+                    let newBal = (currentBal || 0) + amt;
+                    return newBal < 0 ? 0 : newBal;
+                }, (error, committed) => {
+                    if (committed) {
+                        alert(`✅ बैलेंस सफलतापूर्वक अपडेट हो गया!`);
+                        loadAdminData();
+                    } else {
+                        alert("❌ अपडेट करने में विफल!");
+                    }
+                });
+            } else {
+                alert("❌ कृपया सही संख्या दर्ज करें!");
+            }
+        }
+    }
+
     function loadAdminData() {
         let container = document.getElementById("adminRequests");
         if (activeAdminTab === 'deps') {
@@ -899,6 +924,7 @@
                         <td>+91 ${u.mobile}</td>
                         <td style="color:var(--green); font-weight:bold;">₹${u.balance || 0}</td>
                         <td>
+                            <button class="btn-green" style="padding:2px 6px; font-size:9px;" onclick="adminModifyBalance('${u.mobile}')">💰 Add/Cut ₹</button>
                             <button class="btn-gold" style="padding:2px 6px; font-size:9px;" onclick="adminResetUserPassword('${u.mobile}')">Reset Pass</button>
                         </td>
                     </tr>`;
@@ -909,7 +935,7 @@
         }
     }
 
-    function adminResetUserPassword(mobile) {
+    async function adminResetUserPassword(mobile) {
         let newPwd = prompt(`Enter New Password for (+91 ${mobile}):`);
         if (newPwd && newPwd.trim() !== "") {
             let hashedNewPwd = hashText(newPwd.trim());
@@ -932,6 +958,7 @@
         });
     }
 
+    // 🔓 ADMIN REJECT FUNCTION: Removes Fake UTR to Unblock Original Owner
     function rejectDep(id) {
         db.ref(`deposits/${id}`).once("value", (snapshot) => {
             let d = snapshot.val();
