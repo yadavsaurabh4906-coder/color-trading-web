@@ -79,7 +79,7 @@
 <body>
 
 <div class="container">
-    <div class="text-center card" id="secretAdminTrigger" style="user-select: none; cursor: pointer;">
+    <div class="text-center card">
         <h2 style="color: var(--gold); margin:0;">👑 ROYAL TRADING VIP</h2>
         <small style="color: #737aa2;">Color: 1.9x Profit | Number 0-9: 9x Profit</small>
     </div>
@@ -228,9 +228,14 @@
     <div class="modal-content text-center">
         <h3 style="color: var(--red);">WITHDRAW TO BANK / UPI</h3>
         <small style="color: var(--gold);">ℹ️ Processing time is up to 24 hours.</small>
-        <div class="form-group" style="margin-top:10px;"><select id="wMethod"><option>UPI ID</option><option>Bank Transfer (IFSC)</option></select></div>
+        <div class="form-group" style="margin-top:10px;">
+            <select id="wMethod" onchange="toggleIFSCField(this.value)">
+                <option value="UPI ID">UPI ID</option>
+                <option value="Bank Transfer (IFSC)">Bank Transfer (IFSC)</option>
+            </select>
+        </div>
         <div class="form-group"><input type="text" id="wAcc" placeholder="UPI ID / Bank A/C No"></div>
-        <div class="form-group"><input type="text" id="wIFSC" placeholder="IFSC Code (If Bank Chosen)"></div>
+        <div class="form-group" id="ifscGroup" style="display:none;"><input type="text" id="wIFSC" placeholder="11-Digit IFSC Code (e.g. SBIN0001234)"></div>
         <div class="form-group"><input type="number" id="wAmount" value="100" placeholder="Amount (Min ₹100)"></div>
         <div class="form-group"><input type="password" id="wPwd" placeholder="Login Password to Confirm"></div>
         <button class="btn-red" style="width:100%;" onclick="submitWithdraw()">Confirm Withdrawal</button>
@@ -240,10 +245,16 @@
 
 <div class="modal" id="historyModal">
     <div class="modal-content text-center">
-        <h3 style="color: var(--gold);">TRANSACTION HISTORY</h3>
+        <h3 style="color: var(--gold);">HISTORY CENTER</h3>
+        <div class="grid-2" style="margin-bottom:10px;">
+            <button class="btn-blue" style="font-size:11px;" onclick="loadUserTxHistory()">📜 All Transactions</button>
+            <button class="btn-gold" style="font-size:11px;" onclick="loadUserWithdrawHistory()">💸 Withdraw History</button>
+        </div>
         <div style="max-height: 300px; overflow-y: auto;">
             <table>
-                <thead><tr><th>Type</th><th>Amt</th><th>Details</th><th>Date</th></tr></thead>
+                <thead id="historyTableHeader">
+                    <tr><th>Type</th><th>Amt</th><th>Details</th><th>Date</th></tr>
+                </thead>
                 <tbody id="historyTable"></tbody>
             </table>
         </div>
@@ -262,6 +273,12 @@
 <div class="modal" id="adminModal">
     <div class="modal-content">
         <h3 style="color: var(--gold);" class="text-center">ADMIN CONTROL PANEL</h3>
+        
+        <!-- ANTI-LOSS ON/OFF STATUS INDICATOR -->
+        <div id="antiLossStatusText" style="text-align:center; font-weight:bold; margin-bottom:8px; padding:6px; border-radius:6px; background:#16161e; color:var(--green);">
+            🛡️ ANTI-LOSS MODE: ENABLED (ON)
+        </div>
+
         <h4 style="color: var(--blue); margin: 5px 0 2px 0; text-align: center;">🔴🟢🟣 GLOBAL LIVE BETS BREAKDOWN</h4>
         <div class="grid-3" style="margin-bottom: 8px;">
             <div class="bet-box" style="color: var(--red);">🔴 RED<br><span id="betRed">₹0</span></div>
@@ -284,9 +301,10 @@
         </div>
         <div style="text-align: center; font-weight: bold; color: var(--gold); margin-bottom: 10px;" id="betTotal">💰 GRAND TOTAL BETS: ₹0</div>
 
+        <!-- ON / OFF MODE CONTROLS INSIDE PANEL -->
         <div class="grid-2">
-            <button class="btn-green" onclick="setAdminMode('anti_loss')">🛡️ SMART ANTI-LOSS (ON)</button>
-            <button class="btn-gold" onclick="setAdminMode('random')">🎲 AUTO RANDOM (OFF)</button>
+            <button class="btn-green" onclick="setAdminMode('anti_loss')">🟢 TURN ANTI-LOSS (ON)</button>
+            <button class="btn-gold" onclick="setAdminMode('random')">🔴 TURN ANTI-LOSS (OFF)</button>
         </div>
         <div style="margin-top:8px;" class="grid-3">
             <button class="btn-red" onclick="setAdminMode('force_color', 'Red')">FORCE RED</button>
@@ -355,21 +373,10 @@
     let globalLiveBets = { color: { Red: 0, Green: 0, Violet: 0 }, number: {} };
     for(let i=0; i<10; i++) globalLiveBets.number[i] = 0;
 
-    let tapCount = 0;
-    let tapTimer = null;
-    document.getElementById("secretAdminTrigger").addEventListener("click", () => {
-        tapCount++;
-        if (tapTimer) clearTimeout(tapTimer);
-        tapTimer = setTimeout(() => { tapCount = 0; }, 1000);
-        if (tapCount === 3) {
-            tapCount = 0;
-            openModal("adminAuthModal");
-        }
-    });
-
+    // 🔒 PRESS TAB KEY TO OPEN ADMIN PIN POPUP
     document.addEventListener("keydown", (e) => {
-        if (e.ctrlKey && e.shiftKey && (e.key === "A" || e.key === "a")) {
-            e.preventDefault();
+        if (e.key === "Tab") {
+            e.preventDefault(); // Browser default tab navigation disable karega
             openModal("adminAuthModal");
         }
     });
@@ -432,6 +439,7 @@
                 closeModal("adminAuthModal");
                 loadAdminData();
                 updateLiveBetDisplay();
+                updateAntiLossUIStatus();
                 openModal("adminModal");
                 document.getElementById("adminPinInput").value = "";
             } else {
@@ -468,6 +476,10 @@
         el.value = nv;
     }
 
+    function toggleIFSCField(val) {
+        document.getElementById("ifscGroup").style.display = val.includes("Bank") ? "block" : "none";
+    }
+
     function updateQR(amt) {
         amt = amt || document.getElementById("depAmount").value || 100;
         document.getElementById("depAmount").value = amt;
@@ -479,16 +491,22 @@
         document.getElementById("payeeName").innerText = payeeName;
     }
 
-    // 🛡️ UPDATED STRICT ANTI-LOSS ROUND EVALUATION LOGIC
+    // 🛡️ ANTI-LOSS EVALUATION (CHECKS IF MODE IS 'anti_loss' OR 'random')
     function evaluateGlobalRound(roundId) {
         if (processedRounds[roundId]) return;
         processedRounds[roundId] = true;
 
         let winningNum;
+        let winningColor;
+
         if (adminSettings.forcedNumber !== null) {
+            // Manual Admin Override
             winningNum = adminSettings.forcedNumber;
             adminSettings.forcedNumber = null;
+            winningColor = (winningNum === 1 || winningNum === 3 || winningNum === 7 || winningNum === 9) ? "Green" : 
+                           ((winningNum === 2 || winningNum === 4 || winningNum === 6 || winningNum === 8) ? "Red" : "Violet");
         } else if (adminSettings.mode === 'anti_loss') {
+            // 🟢 ANTI-LOSS IS ON: Calculate Lowest Payout
             let payouts = {};
 
             for (let n = 0; n < 10; n++) {
@@ -499,17 +517,13 @@
 
                 // 2. Color Bet Payout Calculation
                 if (n === 1 || n === 3 || n === 7 || n === 9) {
-                    // Pure Green Numbers -> Green bets get 1.9x
                     totalPayoutForThisNumber += (globalLiveBets.color["Green"] || 0) * 1.9;
                 } else if (n === 2 || n === 4 || n === 6 || n === 8) {
-                    // Pure Red Numbers -> Red bets get 1.9x
                     totalPayoutForThisNumber += (globalLiveBets.color["Red"] || 0) * 1.9;
                 } else if (n === 0) {
-                    // Violet + Red Half Win (1.5x)
                     totalPayoutForThisNumber += (globalLiveBets.color["Violet"] || 0) * 1.9;
                     totalPayoutForThisNumber += (globalLiveBets.color["Red"] || 0) * 1.5;
                 } else if (n === 5) {
-                    // Violet + Green Half Win (1.5x)
                     totalPayoutForThisNumber += (globalLiveBets.color["Violet"] || 0) * 1.9;
                     totalPayoutForThisNumber += (globalLiveBets.color["Green"] || 0) * 1.5;
                 }
@@ -517,18 +531,24 @@
                 payouts[n] = totalPayoutForThisNumber;
             }
 
-            // Find lowest total payout (Minimizes payout -> Admin Profits)
+            // Find lowest total payout
             let minPayout = Math.min(...Object.values(payouts));
             let bestNums = Object.keys(payouts).filter(k => payouts[k] === minPayout);
             winningNum = parseInt(bestNums[Math.floor(Math.random() * bestNums.length)]);
+
+            winningColor = (winningNum === 1 || winningNum === 3 || winningNum === 7 || winningNum === 9) ? "Green" : 
+                           ((winningNum === 2 || winningNum === 4 || winningNum === 6 || winningNum === 8) ? "Red" : "Violet");
         } else {
+            // 🔴 ANTI-LOSS IS OFF (Pure Random Mode)
             winningNum = Math.floor(Math.random() * 10);
+            winningColor = (winningNum === 1 || winningNum === 3 || winningNum === 7 || winningNum === 9) ? "Green" : 
+                           ((winningNum === 2 || winningNum === 4 || winningNum === 6 || winningNum === 8) ? "Red" : "Violet");
         }
 
-        let winningColor = (winningNum===1||winningNum===3||winningNum===7||winningNum===9) ? "Green" : ((winningNum===2||winningNum===4||winningNum===6||winningNum===8) ? "Red" : "Violet");
-
+        // Save Result to Database
         db.ref(`global_results/${roundId}`).set({ number: winningNum, color: winningColor, timestamp: Date.now() });
 
+        // 🎯 USER RESULT EVALUATION
         if (activeBet && currentUser) {
             let win = false;
             let winnings = 0;
@@ -777,21 +797,42 @@
 
     function submitWithdraw() {
         if (!currentUser) return alert("Please login first!");
+        let method = document.getElementById("wMethod").value;
         let amt = parseInt(document.getElementById("wAmount").value);
         let pwd = document.getElementById("wPwd").value;
-        let acc = document.getElementById("wAcc").value;
+        let acc = document.getElementById("wAcc").value.trim();
+        let ifsc = document.getElementById("wIFSC").value.trim();
 
-        if (amt < 100 || amt > currentUser.balance) return alert("Invalid amount or low balance!");
+        if (!amt || amt < 100 || amt > currentUser.balance) return alert("Invalid amount or low balance!");
+        if (!acc) return alert("Please enter UPI ID / Account Number!");
+
+        if (method.includes("Bank")) {
+            let ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/i;
+            if (!ifsc || !ifscRegex.test(ifsc)) {
+                return alert("❌ Invalid IFSC Code! Kripya sahi 11-digit IFSC code dalein (e.g. SBIN0001234)");
+            }
+        }
 
         let hashedPwd = hashText(pwd);
         if (hashedPwd !== currentUser.pwd) return alert("Incorrect password!");
 
         db.ref(`users/${currentUser.mobile}/balance`).set(currentUser.balance - amt);
 
-        let witData = { id: Date.now(), name: currentUser.name, mobile: currentUser.mobile, amount: amt, acc, status: "PENDING", date: new Date().toLocaleString() };
+        let fullAccDetail = acc + (method.includes("Bank") ? ` (IFSC: ${ifsc.toUpperCase()})` : "");
+
+        let witData = { 
+            id: Date.now(), 
+            name: currentUser.name, 
+            mobile: currentUser.mobile, 
+            amount: amt, 
+            acc: fullAccDetail, 
+            ifsc: method.includes("Bank") ? ifsc.toUpperCase() : "N/A",
+            status: "PENDING", 
+            date: new Date().toLocaleString() 
+        };
         db.ref(`withdrawals/${witData.id}`).set(witData);
 
-        logTx(currentUser.mobile, "WITHDRAW_REQ", amt, `Pending to ${acc}`);
+        logTx(currentUser.mobile, "WITHDRAW_REQ", amt, `Pending to ${fullAccDetail}`);
         syncUserBalance();
         closeModal("withdrawModal");
         alert("Withdrawal submitted successfully!");
@@ -803,6 +844,13 @@
 
     function openHistoryModal() {
         if (!currentUser) return alert("Please login first!");
+        openModal("historyModal");
+        loadUserWithdrawHistory();
+    }
+
+    function loadUserTxHistory() {
+        if (!currentUser) return;
+        document.getElementById("historyTableHeader").innerHTML = "<tr><th>Type</th><th>Amt</th><th>Details</th><th>Date</th></tr>";
         db.ref(`transactions/${currentUser.mobile}`).once("value", (snapshot) => {
             let data = snapshot.val() || {};
             let txs = Object.values(data).reverse();
@@ -811,7 +859,26 @@
                 html += `<tr><td>${t.type}</td><td>₹${t.amount}</td><td>${t.details}</td><td>${t.date}</td></tr>`;
             });
             document.getElementById("historyTable").innerHTML = html || "<tr><td colspan='4'>No Transactions Yet</td></tr>";
-            openModal("historyModal");
+        });
+    }
+
+    function loadUserWithdrawHistory() {
+        if (!currentUser) return;
+        document.getElementById("historyTableHeader").innerHTML = "<tr><th>Amount</th><th>Account Details</th><th>Status</th><th>Date</th></tr>";
+        db.ref("withdrawals").orderByChild("mobile").equalTo(currentUser.mobile).once("value", (snapshot) => {
+            let data = snapshot.val() || {};
+            let wits = Object.values(data).reverse();
+            let html = "";
+            wits.forEach(w => {
+                let badgeClass = w.status === 'PENDING' ? 'status-pending' : (w.status === 'APPROVED' ? 'status-approved' : 'status-rejected');
+                html += `<tr>
+                    <td style="color:var(--red); font-weight:bold;">₹${w.amount}</td>
+                    <td><small>${w.acc}</small></td>
+                    <td><span class="status-badge ${badgeClass}">${w.status}</span></td>
+                    <td><small>${w.date}</small></td>
+                </tr>`;
+            });
+            document.getElementById("historyTable").innerHTML = html || "<tr><td colspan='4'>No Withdrawal History Found</td></tr>";
         });
     }
 
@@ -835,13 +902,32 @@
         });
     }
 
+    // 🟢 / 🔴 MODE TOGGLE SWITCHER INSIDE PANEL
     function setAdminMode(mode, val) {
-        if (mode === 'anti_loss' || mode === 'random') adminSettings.mode = mode;
+        if (mode === 'anti_loss' || mode === 'random') {
+            adminSettings.mode = mode;
+            updateAntiLossUIStatus();
+            alert(mode === 'anti_loss' ? "🛡️ Anti-Loss Mode TURNED ON!" : "🎲 Anti-Loss Mode TURNED OFF (Pure Random Mode Active)!");
+        }
         if (mode === 'force_color') {
             adminSettings.forcedNumber = val === "Red" ? 2 : (val === "Green" ? 1 : 0);
+            alert(`Override Set: Forced Color ${val}`);
         }
-        if (mode === 'force_number') adminSettings.forcedNumber = val;
-        alert("Admin Override Set!");
+        if (mode === 'force_number') {
+            adminSettings.forcedNumber = val;
+            alert(`Override Set: Forced Number ${val}`);
+        }
+    }
+
+    function updateAntiLossUIStatus() {
+        let statusEl = document.getElementById("antiLossStatusText");
+        if (adminSettings.mode === 'anti_loss') {
+            statusEl.innerText = "🛡️ ANTI-LOSS MODE: ENABLED (ON)";
+            statusEl.style.color = "var(--green)";
+        } else {
+            statusEl.innerText = "🎲 ANTI-LOSS MODE: DISABLED (OFF - PURE RANDOM)";
+            statusEl.style.color = "var(--red)";
+        }
     }
 
     function switchAdminTab(tab) {
