@@ -7,6 +7,8 @@
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <!-- CryptoJS for Universal Hashing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         :root {
             --bg-dark: #0f0f17;
@@ -336,13 +338,9 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // 🔒 SHA-256 Hash Function for Passwords & PINs
-    async function hashText(text) {
-        const encoder = new TextEncoder();
-        const data = encoder.encode(text);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    // 🔒 Synchronous SHA-256 Hashing with CryptoJS
+    function hashText(text) {
+        return CryptoJS.SHA256(text.toString().trim()).toString();
     }
 
     let step = 10;
@@ -492,8 +490,7 @@
         } else if (adminSettings.mode === 'anti_loss') {
             let payouts = {};
             for (let n = 0; n < 10; n++) {
-                let colMulti = 1.9;
-                if (n === 0 || n === 5) colMulti = 1.45; // Half Violet payout
+                let colMulti = (n === 0 || n === 5) ? 1.45 : 1.9;
                 let col = (n===1||n===3||n===7||n===9) ? "Green" : ((n===2||n===4||n===6||n===8) ? "Red" : "Violet");
                 payouts[n] = (globalLiveBets.color[col] * colMulti) + (globalLiveBets.number[n] * 9.0);
             }
@@ -595,8 +592,8 @@
         document.getElementById("betTotal").innerText = "💰 GRAND TOTAL BETS: ₹" + tot;
     }
 
-    // 🔒 SECURED: Registration with SHA-256 Hashed Password & PIN
-    async function submitRegister() {
+    // 🔒 FIXED REGISTRATION: Correct Hashing & Firebase Write
+    function submitRegister() {
         let name = document.getElementById("regName").value.trim();
         let mobile = document.getElementById("regMobile").value.trim();
         let pwd = document.getElementById("regPwd").value.trim();
@@ -604,30 +601,34 @@
 
         if (!name || mobile.length !== 10 || !pwd || pin.length !== 4) return alert("Fill all details correctly!");
 
-        let hashedPwd = await hashText(pwd);
-        let hashedPin = await hashText(pin);
+        let hashedPwd = hashText(pwd);
+        let hashedPin = hashText(pin);
 
         db.ref(`users/${mobile}`).once("value", (snapshot) => {
             if (snapshot.exists()) return alert("Mobile already registered!");
 
             let userData = { name, mobile, pwd: hashedPwd, pin: hashedPin, balance: 0 };
-            db.ref(`users/${mobile}`).set(userData);
-            currentUser = userData;
-            sessionStorage.setItem("activeUser", JSON.stringify(currentUser));
-            syncUserBalance();
-            closeModal("registerModal");
-            alert("Account Registered Successfully!");
+            
+            db.ref(`users/${mobile}`).set(userData).then(() => {
+                currentUser = userData;
+                sessionStorage.setItem("activeUser", JSON.stringify(currentUser));
+                syncUserBalance();
+                closeModal("registerModal");
+                alert("Account Registered Successfully!");
+            }).catch(error => {
+                alert("Error saving user data!");
+            });
         });
     }
 
-    // 🔒 SECURED: Login with SHA-256 Password Verification
-    async function submitLogin() {
+    // 🔒 FIXED LOGIN: Exact Hash Match Comparison
+    function submitLogin() {
         let mobile = document.getElementById("loginMobile").value.trim();
         let pwd = document.getElementById("loginPwd").value.trim();
 
         if (!mobile || !pwd) return alert("Enter Mobile and Password!");
 
-        let hashedPwd = await hashText(pwd);
+        let hashedPwd = hashText(pwd);
 
         db.ref(`users/${mobile}`).once("value", (snapshot) => {
             let u = snapshot.val();
@@ -655,15 +656,15 @@
         });
     }
 
-    async function submitForgot() {
+    function submitForgot() {
         let mob = document.getElementById("fpMobile").value.trim();
         let pin = document.getElementById("fpPin").value.trim();
         let newPwd = document.getElementById("fpNewPwd").value.trim();
 
         if (!mob || !pin || !newPwd) return alert("Fill all details!");
 
-        let hashedPin = await hashText(pin);
-        let hashedNewPwd = await hashText(newPwd);
+        let hashedPin = hashText(pin);
+        let hashedNewPwd = hashText(newPwd);
 
         db.ref(`users/${mob}`).once("value", (snapshot) => {
             let u = snapshot.val();
@@ -705,7 +706,6 @@
         updateQR(100);
     }
 
-    // 🔒 SECURED: Duplicate UTR Lock Protection
     async function submitDeposit() {
         if (!currentUser) return alert("Please login first!");
 
@@ -719,8 +719,14 @@
 
         try {
             const snapshot = await db.ref("deposits").orderByChild("utr").equalTo(utr).once("value");
+            
             if (snapshot.exists()) {
-                return alert("🚨 This UTR has already been submitted!");
+                let data = snapshot.val();
+                let isAlreadyApprovedOrPending = Object.values(data).some(d => d.status === "APPROVED" || d.status === "PENDING");
+                
+                if (isAlreadyApprovedOrPending) {
+                    return alert("🚨 This UTR has already been submitted or is currently pending!");
+                }
             }
 
             let depData = { 
@@ -745,7 +751,7 @@
         }
     }
 
-    async function submitWithdraw() {
+    function submitWithdraw() {
         if (!currentUser) return alert("Please login first!");
         let amt = parseInt(document.getElementById("wAmount").value);
         let pwd = document.getElementById("wPwd").value;
@@ -753,7 +759,7 @@
 
         if (amt < 100 || amt > currentUser.balance) return alert("Invalid amount or low balance!");
 
-        let hashedPwd = await hashText(pwd);
+        let hashedPwd = hashText(pwd);
         if (hashedPwd !== currentUser.pwd) return alert("Incorrect password!");
 
         db.ref(`users/${currentUser.mobile}/balance`).set(currentUser.balance - amt);
@@ -832,7 +838,10 @@
                 let html = "<table><thead><tr><th>User Info</th><th>Amount</th><th>UTR Number</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody>";
                 deps.forEach(d => {
                     let badgeClass = d.status === 'PENDING' ? 'status-pending' : (d.status === 'APPROVED' ? 'status-approved' : 'status-rejected');
-                    let actionBtn = d.status === 'PENDING' ? `<button class="btn-green" style="padding:2px 4px; font-size:9px;" onclick="approveDep('${d.id}')">Approve</button>` : '✓ Done';
+                    let actionBtn = d.status === 'PENDING' ? `
+                        <button class="btn-green" style="padding:2px 4px; font-size:9px;" onclick="approveDep('${d.id}')">Approve</button>
+                        <button class="btn-red" style="padding:2px 4px; font-size:9px;" onclick="rejectDep('${d.id}')">Reject</button>
+                    ` : '✓ Done';
                     
                     html += `<tr>
                         <td><b>${d.name}</b><br><small style="color:#7aa2f7;">+91 ${d.mobile}</small></td>
@@ -900,10 +909,10 @@
         }
     }
 
-    async function adminResetUserPassword(mobile) {
+    function adminResetUserPassword(mobile) {
         let newPwd = prompt(`Enter New Password for (+91 ${mobile}):`);
         if (newPwd && newPwd.trim() !== "") {
-            let hashedNewPwd = await hashText(newPwd.trim());
+            let hashedNewPwd = hashText(newPwd.trim());
             db.ref(`users/${mobile}/pwd`).set(hashedNewPwd);
             alert(`Password updated successfully for user!`);
             loadAdminData();
@@ -918,6 +927,18 @@
                 db.ref(`users/${d.mobile}/balance`).transaction((bal) => (bal || 0) + d.amount);
                 logTx(d.mobile, "DEPOSIT_SUCCESS", d.amount, `Approved UTR: ${d.utr}`);
                 alert("Deposit Approved! Cash added to user balance.");
+                loadAdminData();
+            }
+        });
+    }
+
+    function rejectDep(id) {
+        db.ref(`deposits/${id}`).once("value", (snapshot) => {
+            let d = snapshot.val();
+            if (d && d.status === 'PENDING') {
+                db.ref(`deposits/${id}`).remove();
+                logTx(d.mobile, "DEPOSIT_REJECTED", d.amount, `Fake UTR Rejected: ${d.utr}`);
+                alert("❌ Fake Deposit Rejected & UTR Unblocked!");
                 loadAdminData();
             }
         });
