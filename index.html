@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>👑 ROYAL COLOR & NUMBER TRADING VIP (STABLE SYNC)</title>
+    <title>👑 ROYAL COLOR & NUMBER TRADING VIP (SECURE)</title>
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
@@ -77,13 +77,11 @@
 <body>
 
 <div class="container">
-    <!-- Title Area (Secret Admin Trigger for Mobile & PC) -->
     <div class="text-center card" id="secretAdminTrigger" style="user-select: none; cursor: pointer;">
         <h2 style="color: var(--gold); margin:0;">👑 ROYAL TRADING VIP</h2>
         <small style="color: #737aa2;">Color: 1.9x Profit | Number 0-9: 9x Profit</small>
     </div>
 
-    <!-- User Status Bar -->
     <div class="card flex-between">
         <span id="userStatus" style="color: var(--red); font-weight: bold;">🔒 Guest Mode</span>
         <div>
@@ -92,7 +90,6 @@
         </div>
     </div>
 
-    <!-- Wallet Balance -->
     <div class="card text-center">
         <small style="color: #737aa2;">AVAILABLE WALLET BALANCE</small>
         <h1 style="color: var(--green); margin: 5px 0;" id="walletBalance">₹0</h1>
@@ -105,13 +102,11 @@
         <button style="width:100%; margin-top:8px; background:#25d366; color:#fff;" onclick="window.open('https://wa.me/919935088115?text=Hello%20Admin%20Support')">💬 24x7 Live Online Support</button>
     </div>
 
-    <!-- Universal Synchronized Global Timer -->
     <div class="card text-center">
         <div style="font-size: 16px; font-weight: bold; color: var(--gold); margin-bottom: 5px;" id="timerLabel">⏳ Connecting Server...</div>
         <div class="progress-bar"><div class="progress-fill" id="timerBar"></div></div>
     </div>
 
-    <!-- Bet Selector Controls -->
     <div class="card">
         <small style="color: #737aa2;">SELECT BET AMOUNT (₹10 - ₹500 MAX)</small>
         <div class="flex-between" style="margin: 8px 0;">
@@ -127,7 +122,6 @@
         </div>
     </div>
 
-    <!-- Color Choices -->
     <div class="card text-center">
         <small style="color: #737aa2;">CHOOSE COLOR (1.9x PROFIT)</small>
         <div class="grid-3 flex-between" style="gap: 8px; margin-top: 5px;">
@@ -152,7 +146,6 @@
         <small id="currentBetInfo" style="color: var(--blue); display:block; margin-top:8px; font-weight:bold;">🎯 Selection: None (Watching Mode)</small>
     </div>
 
-    <!-- Results & History -->
     <div class="card text-center">
         <h3 style="color: var(--gold); margin:4px 0;" id="resultLabel">🎰 WINNING RESULT: --</h3>
         <small id="resultStatus" style="color: #c0caf5;">Waiting for round to finish...</small>
@@ -166,9 +159,7 @@
 <div class="modal" id="adminAuthModal">
     <div class="modal-content text-center">
         <h3 style="color: var(--gold);">ENTER ADMIN PIN</h3>
-        <div class="form-group">
-            <input type="password" id="adminPinInput" placeholder="Enter PIN" style="text-align: center; font-size: 18px;">
-        </div>
+        <div class="form-group"><input type="password" id="adminPinInput" placeholder="Enter PIN" style="text-align: center; font-size: 18px;"></div>
         <button class="btn-green" style="width:100%;" onclick="verifyAdminPin()">Access Control Panel</button>
         <button class="btn-red" style="width:100%; margin-top:8px;" onclick="emergencyResetPin()">🚨 Reset PIN to 1234</button>
         <button class="btn-dark" style="width:100%; margin-top:8px;" onclick="closeModal('adminAuthModal')">Cancel</button>
@@ -235,9 +226,7 @@
     <div class="modal-content text-center">
         <h3 style="color: var(--red);">WITHDRAW TO BANK / UPI</h3>
         <small style="color: var(--gold);">ℹ️ Processing time is up to 24 hours.</small>
-        <div class="form-group" style="margin-top:10px;">
-            <select id="wMethod"><option>UPI ID</option><option>Bank Transfer (IFSC)</option></select>
-        </div>
+        <div class="form-group" style="margin-top:10px;"><select id="wMethod"><option>UPI ID</option><option>Bank Transfer (IFSC)</option></select></div>
         <div class="form-group"><input type="text" id="wAcc" placeholder="UPI ID / Bank A/C No"></div>
         <div class="form-group"><input type="text" id="wIFSC" placeholder="IFSC Code (If Bank Chosen)"></div>
         <div class="form-group"><input type="number" id="wAmount" value="100" placeholder="Amount (Min ₹100)"></div>
@@ -268,11 +257,9 @@
     </div>
 </div>
 
-<!-- Detailed Admin Panel Modal -->
 <div class="modal" id="adminModal">
     <div class="modal-content">
         <h3 style="color: var(--gold);" class="text-center">ADMIN CONTROL PANEL</h3>
-        
         <h4 style="color: var(--blue); margin: 5px 0 2px 0; text-align: center;">🔴🟢🟣 GLOBAL LIVE BETS BREAKDOWN</h4>
         <div class="grid-3" style="margin-bottom: 8px;">
             <div class="bet-box" style="color: var(--red);">🔴 RED<br><span id="betRed">₹0</span></div>
@@ -348,6 +335,15 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+
+    // 🔒 SHA-256 Hash Function for Passwords & PINs
+    async function hashText(text) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(text);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
 
     let step = 10;
     let timer = 40;
@@ -496,8 +492,10 @@
         } else if (adminSettings.mode === 'anti_loss') {
             let payouts = {};
             for (let n = 0; n < 10; n++) {
+                let colMulti = 1.9;
+                if (n === 0 || n === 5) colMulti = 1.45; // Half Violet payout
                 let col = (n===1||n===3||n===7||n===9) ? "Green" : ((n===2||n===4||n===6||n===8) ? "Red" : "Violet");
-                payouts[n] = (globalLiveBets.color[col] * 1.9) + (globalLiveBets.number[n] * 9.0);
+                payouts[n] = (globalLiveBets.color[col] * colMulti) + (globalLiveBets.number[n] * 9.0);
             }
             let minPayout = Math.min(...Object.values(payouts));
             let bestNums = Object.keys(payouts).filter(k => payouts[k] === minPayout);
@@ -513,10 +511,19 @@
         if (activeBet && currentUser) {
             let win = false;
             let winnings = 0;
+
             if (activeBet.type === "number" && activeBet.choice === winningNum) {
                 win = true; winnings = activeBet.amount * 9;
-            } else if (activeBet.type === "color" && activeBet.choice === winningColor) {
-                win = true; winnings = Math.round(activeBet.amount * 1.9);
+            } else if (activeBet.type === "color") {
+                if (activeBet.choice === winningColor) {
+                    win = true;
+                    let multiplier = (winningNum === 0 || winningNum === 5) ? 1.45 : 1.9;
+                    winnings = Math.round(activeBet.amount * multiplier);
+                } else if (winningColor === "Violet" && (winningNum === 0 || winningNum === 5)) {
+                    if ((winningNum === 0 && activeBet.choice === "Red") || (winningNum === 5 && activeBet.choice === "Green")) {
+                        win = true; winnings = Math.round(activeBet.amount * 1.45);
+                    }
+                }
             }
 
             if (win) {
@@ -588,7 +595,8 @@
         document.getElementById("betTotal").innerText = "💰 GRAND TOTAL BETS: ₹" + tot;
     }
 
-    function submitRegister() {
+    // 🔒 SECURED: Registration with SHA-256 Hashed Password & PIN
+    async function submitRegister() {
         let name = document.getElementById("regName").value.trim();
         let mobile = document.getElementById("regMobile").value.trim();
         let pwd = document.getElementById("regPwd").value.trim();
@@ -596,10 +604,13 @@
 
         if (!name || mobile.length !== 10 || !pwd || pin.length !== 4) return alert("Fill all details correctly!");
 
+        let hashedPwd = await hashText(pwd);
+        let hashedPin = await hashText(pin);
+
         db.ref(`users/${mobile}`).once("value", (snapshot) => {
             if (snapshot.exists()) return alert("Mobile already registered!");
 
-            let userData = { name, mobile, pwd, pin, balance: 0 };
+            let userData = { name, mobile, pwd: hashedPwd, pin: hashedPin, balance: 0 };
             db.ref(`users/${mobile}`).set(userData);
             currentUser = userData;
             sessionStorage.setItem("activeUser", JSON.stringify(currentUser));
@@ -609,13 +620,18 @@
         });
     }
 
-    function submitLogin() {
+    // 🔒 SECURED: Login with SHA-256 Password Verification
+    async function submitLogin() {
         let mobile = document.getElementById("loginMobile").value.trim();
         let pwd = document.getElementById("loginPwd").value.trim();
 
+        if (!mobile || !pwd) return alert("Enter Mobile and Password!");
+
+        let hashedPwd = await hashText(pwd);
+
         db.ref(`users/${mobile}`).once("value", (snapshot) => {
             let u = snapshot.val();
-            if (u && u.pwd === pwd) {
+            if (u && u.pwd === hashedPwd) {
                 currentUser = u;
                 sessionStorage.setItem("activeUser", JSON.stringify(currentUser));
                 syncUserBalance();
@@ -639,15 +655,20 @@
         });
     }
 
-    function submitForgot() {
+    async function submitForgot() {
         let mob = document.getElementById("fpMobile").value.trim();
         let pin = document.getElementById("fpPin").value.trim();
         let newPwd = document.getElementById("fpNewPwd").value.trim();
 
+        if (!mob || !pin || !newPwd) return alert("Fill all details!");
+
+        let hashedPin = await hashText(pin);
+        let hashedNewPwd = await hashText(newPwd);
+
         db.ref(`users/${mob}`).once("value", (snapshot) => {
             let u = snapshot.val();
-            if (u && u.pin === pin) {
-                db.ref(`users/${mob}/pwd`).set(newPwd);
+            if (u && u.pin === hashedPin) {
+                db.ref(`users/${mob}/pwd`).set(hashedNewPwd);
                 alert("Password reset successfully!");
                 closeModal("forgotModal");
             } else {
@@ -684,26 +705,56 @@
         updateQR(100);
     }
 
-    function submitDeposit() {
+    // 🔒 SECURED: Duplicate UTR Lock Protection
+    async function submitDeposit() {
+        if (!currentUser) return alert("Please login first!");
+
         let amt = parseInt(document.getElementById("depAmount").value);
         let utr = document.getElementById("depUTR").value.trim();
-        if (!amt || utr.length !== 12) return alert("Enter valid 12-digit UTR!");
 
-        let depData = { id: Date.now(), name: currentUser.name, mobile: currentUser.mobile, amount: amt, utr, status: "PENDING", date: new Date().toLocaleString() };
-        db.ref(`deposits/${depData.id}`).set(depData);
-        logTx(currentUser.mobile, "DEPOSIT_PENDING", amt, `Submitted UTR: ${utr}`);
-        closeModal("depositModal");
-        alert("Deposit reference submitted successfully!");
+        if (!amt || amt < 100) return alert("Minimum deposit is ₹100");
+        if (!utr || utr.length !== 12 || isNaN(utr)) {
+            return alert("❌ Enter valid 12-digit numeric UTR!");
+        }
+
+        try {
+            const snapshot = await db.ref("deposits").orderByChild("utr").equalTo(utr).once("value");
+            if (snapshot.exists()) {
+                return alert("🚨 This UTR has already been submitted!");
+            }
+
+            let depData = { 
+                id: Date.now(), 
+                name: currentUser.name, 
+                mobile: currentUser.mobile, 
+                amount: amt, 
+                utr: utr, 
+                status: "PENDING", 
+                date: new Date().toLocaleString() 
+            };
+
+            await db.ref(`deposits/${depData.id}`).set(depData);
+            logTx(currentUser.mobile, "DEPOSIT_PENDING", amt, `Submitted UTR: ${utr}`);
+            document.getElementById("depUTR").value = "";
+            closeModal("depositModal");
+            alert("✅ Deposit submitted! Pending admin approval.");
+
+        } catch (err) {
+            console.error("Deposit error:", err);
+            alert("Server Error! Try again.");
+        }
     }
 
-    function submitWithdraw() {
+    async function submitWithdraw() {
         if (!currentUser) return alert("Please login first!");
         let amt = parseInt(document.getElementById("wAmount").value);
         let pwd = document.getElementById("wPwd").value;
         let acc = document.getElementById("wAcc").value;
 
         if (amt < 100 || amt > currentUser.balance) return alert("Invalid amount or low balance!");
-        if (pwd !== currentUser.pwd) return alert("Incorrect password!");
+
+        let hashedPwd = await hashText(pwd);
+        if (hashedPwd !== currentUser.pwd) return alert("Incorrect password!");
 
         db.ref(`users/${currentUser.mobile}/balance`).set(currentUser.balance - amt);
 
@@ -849,11 +900,12 @@
         }
     }
 
-    function adminResetUserPassword(mobile) {
+    async function adminResetUserPassword(mobile) {
         let newPwd = prompt(`Enter New Password for (+91 ${mobile}):`);
         if (newPwd && newPwd.trim() !== "") {
-            db.ref(`users/${mobile}/pwd`).set(newPwd.trim());
-            alert(`Password updated successfully to: ${newPwd.trim()}`);
+            let hashedNewPwd = await hashText(newPwd.trim());
+            db.ref(`users/${mobile}/pwd`).set(hashedNewPwd);
+            alert(`Password updated successfully for user!`);
             loadAdminData();
         }
     }
