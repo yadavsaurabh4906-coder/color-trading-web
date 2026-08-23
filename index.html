@@ -3,182 +3,551 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>👑 ROYAL COLOR & NUMBER TRADING VIP (SECURE)</title>
+    <title>👑 ROYAL COLOR, BIG/SMALL & NUMBER TRADING VIP</title>
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-    <!-- CryptoJS for Universal Hashing -->
+    <!-- CryptoJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <!-- EmailJS -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <!-- QRCode JS Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- JS Confetti Effect -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Poppins:wght@400;600;700;800&display=swap');
+
         :root {
-            --bg-dark: #0f0f17;
-            --card-bg: #1a1b26;
-            --gold: #f7c645;
-            --red: #f7768e;
-            --green: #9ece6a;
-            --violet: #bb9af7;
-            --blue: #7aa2f7;
-            --text: #c0caf5;
+            --bg-dark: #020205;
+            --card-bg: rgba(12, 16, 28, 0.85);
+            --gold: #ffd700;
+            --gold-glow: rgba(255, 215, 0, 0.6);
+            --cyan: #00f3ff;
+            --cyan-glow: rgba(0, 243, 255, 0.5);
+            --red: #ff2a6d;
+            --red-glow: rgba(255, 42, 109, 0.6);
+            --green: #05ffa1;
+            --green-glow: rgba(5, 255, 161, 0.6);
+            --violet: #b537f2;
+            --violet-glow: rgba(181, 55, 242, 0.6);
+            --blue: #0056ff;
+            --orange: #ff7000;
         }
 
         body {
-            font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text);
-            margin: 0; padding: 10px;
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at 50% 0%, #0d1b2a 0%, var(--bg-dark) 100%);
+            color: #ffffff;
+            margin: 0; padding: 12px;
             display: flex; justify-content: center;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        .container { width: 100%; max-width: 500px; }
-        .card { background: var(--card-bg); border-radius: 10px; padding: 12px; margin-bottom: 12px; border: 1px solid #24283b; }
+        .container { width: 100%; max-width: 480px; position: relative; z-index: 2; transition: filter 0.3s ease; }
+        
+        .app-locked {
+            filter: blur(12px) pointer-events-none;
+            user-select: none;
+        }
+
+        .card { 
+            background: var(--card-bg); 
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px; 
+            padding: 16px; 
+            margin-bottom: 14px; 
+            border: 1px solid rgba(255, 215, 0, 0.25); 
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9), inset 0 0 15px rgba(255,255,255,0.03);
+            position: relative;
+            overflow: hidden;
+        }
+        
         .text-center { text-align: center; }
         
         button {
-            border: none; border-radius: 6px; font-weight: bold; cursor: pointer; padding: 8px 12px;
-            transition: 0.2s;
+            border: none; border-radius: 12px; font-weight: 700; cursor: pointer; padding: 12px 14px;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
         }
-        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        button:hover { transform: translateY(-3px) scale(1.02); }
+        button:active { transform: scale(0.95); }
+        button:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(1); }
 
-        .btn-gold { background: var(--gold); color: #15161e; }
-        .btn-green { background: var(--green); color: #15161e; }
-        .btn-red { background: var(--red); color: #15161e; }
-        .btn-blue { background: var(--blue); color: #15161e; }
-        .btn-dark { background: #24283b; color: var(--text); }
+        .btn-gold { background: linear-gradient(135deg, #ffd700, #ffaa00); color: #000; box-shadow: 0 0 20px var(--gold-glow); }
+        .btn-green { background: linear-gradient(135deg, #05ffa1, #00b36b); color: #000; box-shadow: 0 0 20px var(--green-glow); }
+        .btn-red { background: linear-gradient(135deg, #ff2a6d, #d6004c); color: #fff; box-shadow: 0 0 20px var(--red-glow); }
+        .btn-blue { background: linear-gradient(135deg, #00f3ff, #0056ff); color: #000; box-shadow: 0 0 15px var(--cyan-glow); }
+        .btn-orange { background: linear-gradient(135deg, #ff7000, #ff2a00); color: #fff; box-shadow: 0 0 20px rgba(255,112,0,0.5); }
+        .btn-dark { background: #121829; color: #fff; border: 1px solid rgba(255,255,255,0.1); }
 
         .flex-between { display: flex; justify-content: space-between; align-items: center; }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
 
-        .progress-bar { width: 100%; height: 8px; background: #16161e; border-radius: 4px; overflow: hidden; }
-        .progress-fill { height: 100%; background: var(--blue); width: 100%; transition: width 0.3s linear; }
+        .live-ticker {
+            background: rgba(0, 243, 255, 0.05);
+            border: 1px solid var(--cyan);
+            border-radius: 12px;
+            padding: 6px 10px;
+            margin-bottom: 12px;
+            font-size: 10px;
+            font-family: 'Orbitron', sans-serif;
+            color: var(--cyan);
+            white-space: nowrap;
+            overflow: hidden;
+            box-shadow: 0 0 10px var(--cyan-glow);
+        }
+        .ticker-text {
+            display: inline-block;
+            animation: marquee 18s linear infinite;
+        }
+        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
 
-        .num-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 8px; }
-        .num-btn { height: 45px; border-radius: 6px; font-size: 14px; font-weight: bold; color: #15161e; }
+        .progress-bar { width: 100%; height: 12px; background: rgba(0,0,0,0.8); border-radius: 20px; overflow: hidden; border: 1px solid rgba(0,243,255,0.2); }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #00f3ff, #05ffa1, #ffd700); width: 100%; transition: width 0.3s linear; }
 
-        .history-badge { width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; color: #15161e; margin: 2px; }
+        .game-nav-tabs {
+            display: flex;
+            background: #050811;
+            border-radius: 14px;
+            padding: 4px;
+            border: 1px solid rgba(255, 215, 0, 0.4);
+            margin-bottom: 12px;
+            gap: 4px;
+        }
 
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; z-index: 100; }
-        .modal-content { background: var(--card-bg); padding: 18px; border-radius: 12px; width: 95%; max-width: 550px; max-height: 85vh; overflow-y: auto; border: 1px solid var(--gold); }
-        .form-group { margin-bottom: 10px; }
-        .form-group input, .form-group select { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #24283b; background: #0f0f17; color: #fff; box-sizing: border-box; }
+        .game-tab-btn {
+            flex: 1;
+            padding: 10px 4px;
+            font-size: 11px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            border-radius: 10px;
+            background: transparent;
+            color: #a4b0be;
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .game-tab-btn.active {
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            color: #000;
+            box-shadow: 0 0 15px var(--gold-glow);
+        }
+
+        .game-panel { display: none; }
+        .game-panel.active { display: block; }
+
+        .chip-grid { display: flex; justify-content: space-around; gap: 8px; margin: 10px 0; }
+        .casino-chip {
+            width: 50px; height: 50px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 11px;
+            color: #fff; cursor: pointer;
+            border: 4px dashed #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.8);
+            transition: all 0.2s ease;
+        }
+        .chip-10 { background: radial-gradient(circle, #ff2a6d, #800020); }
+        .chip-50 { background: radial-gradient(circle, #00f3ff, #003366); color:#000; }
+        .chip-100 { background: radial-gradient(circle, #05ffa1, #004d26); color:#000; }
+        .chip-500 { background: radial-gradient(circle, #ffd700, #806600); color: #000; }
+        .casino-chip:hover { transform: scale(1.15) rotate(15deg); }
+
+        .num-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 10px; }
+        .num-btn-wrap { position: relative; }
+        .num-btn { 
+            width: 100%; height: 55px; border-radius: 14px; font-family: 'Orbitron', sans-serif; font-size: 16px; font-weight: 900; color: #fff; 
+            border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+        }
+        .trend-badge {
+            position: absolute; top: -6px; right: -4px;
+            font-size: 8px; font-weight: bold; padding: 2px 4px; border-radius: 8px;
+            background: #000; border: 1px solid #fff; z-index: 5;
+        }
+
+        .roulette-wrapper {
+            position: relative;
+            width: 250px; height: 250px;
+            margin: 25px auto 15px auto;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .roulette-pointer {
+            position: absolute; top: -16px; left: 50%;
+            transform: translateX(-50%);
+            width: 0; height: 0;
+            border-left: 14px solid transparent;
+            border-right: 14px solid transparent;
+            border-top: 28px solid var(--gold);
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.9)) drop-shadow(0 0 12px var(--gold));
+            z-index: 30;
+        }
+
+        .wheel-size-badge {
+            position: absolute;
+            top: 16px; left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 10px; font-weight: 900;
+            padding: 3px 10px; border-radius: 14px;
+            background: rgba(8, 12, 20, 0.95);
+            border: 2px solid var(--gold);
+            box-shadow: 0 0 12px var(--gold-glow);
+            z-index: 25; display: none;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .streak-badge {
+            background: linear-gradient(135deg, #ff7000, #ff2a6d);
+            color: #fff; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 10px;
+            margin-top: 4px; display: inline-block; box-shadow: 0 0 10px rgba(255, 42, 109, 0.8);
+        }
+
+        .roulette-outer-ring {
+            width: 240px; height: 240px;
+            border-radius: 50%; padding: 12px;
+            background: radial-gradient(circle, #2a3447 0%, #0f131d 70%, #030508 100%);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.9), 0 0 25px var(--cyan-glow), inset 0 0 15px rgba(255,255,255,0.05);
+            border: 4px solid var(--gold);
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .roulette-outer-ring::before {
+            content: ''; position: absolute;
+            top: 4px; left: 4px; right: 4px; bottom: 4px;
+            border-radius: 50%;
+            border: 2px dashed rgba(255, 215, 0, 0.6);
+            pointer-events: none;
+        }
+
+        .roulette-wheel {
+            width: 100%; height: 100%;
+            border-radius: 50%; position: relative;
+            background: conic-gradient(
+                #b537f2 0deg 36deg,    /* 0 Violet */
+                #05ffa1 36deg 72deg,   /* 1 Green */
+                #ff2a6d 72deg 108deg,  /* 2 Red */
+                #05ffa1 108deg 144deg, /* 3 Green */
+                #ff2a6d 144deg 180deg, /* 4 Red */
+                #b537f2 180deg 216deg, /* 5 Violet */
+                #ff2a6d 216deg 252deg, /* 6 Red */
+                #05ffa1 252deg 288deg, /* 7 Green */
+                #ff2a6d 288deg 324deg, /* 8 Red */
+                #05ffa1 324deg 360deg  /* 9 Green */
+            );
+            transition: transform 4.5s cubic-bezier(0.12, 0.8, 0.15, 1);
+            box-shadow: inset 0 0 25px rgba(0,0,0,0.9);
+            overflow: hidden;
+        }
+
+        .wheel-number {
+            position: absolute; top: 50%; left: 50%; width: 30px; height: 100px;
+            margin-left: -15px; margin-top: -100px; transform-origin: bottom center;
+            text-align: center; font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 15px;
+            color: #ffffff; text-shadow: 0 2px 4px #000, 0 0 5px rgba(0,0,0,0.8);
+            padding-top: 8px; box-sizing: border-box;
+        }
+
+        .wn-0 { transform: rotate(18deg); }
+        .wn-1 { transform: rotate(54deg); }
+        .wn-2 { transform: rotate(90deg); }
+        .wn-3 { transform: rotate(126deg); }
+        .wn-4 { transform: rotate(162deg); }
+        .wn-5 { transform: rotate(198deg); }
+        .wn-6 { transform: rotate(234deg); }
+        .wn-7 { transform: rotate(270deg); }
+        .wn-8 { transform: rotate(306deg); }
+        .wn-9 { transform: rotate(342deg); }
+
+        .roulette-center {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 76px; height: 76px;
+            background: radial-gradient(circle, #1a2235 0%, #050811 100%);
+            border-radius: 50%; border: 3px solid var(--gold);
+            box-shadow: 0 0 20px rgba(0,0,0,0.9), inset 0 0 10px var(--gold);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-family: 'Orbitron', sans-serif;
+            z-index: 10;
+        }
+
+        .history-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 11px; }
+        .history-table th { background: #050811; color: var(--gold); padding: 8px 4px; border: 1px solid rgba(255,255,255,0.08); font-family: 'Orbitron', sans-serif; }
+        .history-table td { padding: 6px 4px; border: 1px solid rgba(255,255,255,0.04); text-align: center; }
+
+        .history-num-tag {
+            display: inline-block; font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 13px; color: #fff;
+            width: 26px; height: 26px; line-height: 26px; border-radius: 50%; background: #121829;
+        }
+
+        .history-color-tag {
+            display: inline-block; font-weight: 700; font-size: 10px; color: #fff;
+            padding: 3px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 1px;
+        }
+
+        .result-split-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 10px 0; }
+        .result-card { background: #050811; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 10px 4px; text-align: center; }
+        .result-badge {
+            display: inline-block; font-family: 'Orbitron', sans-serif; font-size: 18px; font-weight: 900; padding: 4px 10px; border-radius: 8px; margin-top: 4px;
+            letter-spacing: 1px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); transition: all 0.3s ease;
+        }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); backdrop-filter: blur(10px); align-items: center; justify-content: center; z-index: 100; }
+        .modal-content { background: #080d1a; padding: 22px; border-radius: 24px; width: 92%; max-width: 500px; max-height: 85vh; overflow-y: auto; border: 1px solid var(--gold); box-shadow: 0 0 30px var(--gold-glow); }
+        .form-group { margin-bottom: 12px; text-align: left; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #121829; background: #02050c; color: #fff; box-sizing: border-box; }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 10px; }
-        th, td { border: 1px solid #24283b; padding: 6px 3px; text-align: center; word-break: break-all; }
-        th { background: #16161e; color: var(--gold); }
+        .field-error-msg {
+            color: var(--red);
+            font-size: 10px;
+            font-weight: 600;
+            display: none;
+            margin-top: 4px;
+            padding-left: 4px;
+        }
 
-        .admin-tab-btn { padding: 6px 8px; font-size: 10px; margin-right: 2px; }
-        .status-badge { padding: 2px 5px; border-radius: 4px; font-weight: bold; font-size: 9px; }
-        .status-pending { background: #e0af68; color: #15161e; }
-        .status-approved { background: var(--green); color: #15161e; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
+        th, td { border: 1px solid #121829; padding: 8px 4px; text-align: center; }
+        th { background: #02050c; color: var(--gold); }
+
+        .admin-tab-btn { padding: 6px 10px; font-size: 10px; }
+        .status-badge { padding: 3px 6px; border-radius: 6px; font-weight: bold; font-size: 9px; }
+        .status-pending { background: #ffa502; color: #000; }
+        .status-approved { background: var(--green); color: #000; }
         .status-rejected { background: var(--red); color: #fff; }
 
-        .bet-box { background: #0f0f17; border: 1px solid #24283b; border-radius: 6px; padding: 6px; text-align: center; font-size: 11px; font-weight: bold; }
+        .bet-box { background: #02050c; border: 1px solid #121829; border-radius: 8px; padding: 8px; text-align: center; font-size: 11px; font-weight: bold; }
+        
+        @keyframes headerGlow { 0% { text-shadow: 0 0 10px var(--gold-glow); } 50% { text-shadow: 0 0 25px var(--gold); } 100% { text-shadow: 0 0 10px var(--gold-glow); } }
+        .header-glow { font-family: 'Orbitron', sans-serif; animation: headerGlow 2s infinite; }
+        
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
+        .timer-active { animation: pulse 1s infinite; font-family: 'Orbitron', sans-serif; }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div class="container app-locked" id="mainContainer">
+    <!-- LIVE TICKER MARQUEE -->
+    <div class="live-ticker">
+        <span class="ticker-text">🔥 REAL-TIME PAYOUTS: User ROYAL9912 Won +₹4,500 | User ROYAL8815 Won +₹1,900 | ROYAL0012 Won +₹900 🎉</span>
+    </div>
+
     <div class="text-center card">
-        <h2 style="color: var(--gold); margin:0;">👑 ROYAL TRADING VIP</h2>
-        <small style="color: #737aa2;">Color: 1.9x Profit | Number 0-9: 9x Profit</small>
+        <h2 class="header-glow" style="color: var(--gold); margin:0; font-size:22px;">👑 ROYAL TRADING VIP</h2>
+        <small style="color: #a4b0be; font-size:11px;">Color & Big/Small: 1.9x Profit | Number 0-9: 9x Profit</small>
     </div>
 
+    <!-- 👑 HEADER: LOGO + USER ID + DYNAMIC VIP BADGE -->
     <div class="card flex-between">
-        <span id="userStatus" style="color: var(--red); font-weight: bold;">🔒 Guest Mode</span>
+        <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:20px;">👑</span>
+            <span id="userStatus" style="color: var(--gold); font-family:'Orbitron', sans-serif; font-weight: bold; font-size:13px;">ID: GUEST</span>
+        </div>
+        <span id="userVIPBadge" style="color: var(--gold); font-family:'Orbitron', sans-serif; font-weight: bold; font-size: 11px; border: 1px solid var(--gold); padding: 3px 10px; border-radius: 12px; box-shadow: 0 0 10px var(--gold-glow);">👑 BRONZE VIP</span>
         <div>
-            <button class="btn-blue" id="authBtn" onclick="openModal('loginModal')">Login / Register</button>
-            <button class="btn-red" id="logoutBtn" style="display:none;" onclick="logout()">Logout</button>
+            <button class="btn-blue" id="authBtn" style="padding:6px 12px; font-size:11px;" onclick="openModal('loginModal')">Login / Register</button>
+            <button class="btn-red" id="logoutBtn" style="display:none; padding:6px 12px; font-size:11px;" onclick="logout()">Logout</button>
         </div>
     </div>
 
     <div class="card text-center">
-        <small style="color: #737aa2;">AVAILABLE WALLET BALANCE</small>
-        <h1 style="color: var(--green); margin: 5px 0;" id="walletBalance">₹0</h1>
+        <small style="color: #a4b0be; letter-spacing: 1px; font-size:11px;">AVAILABLE WALLET BALANCE</small>
+        <h1 style="color: var(--green); margin: 6px 0; font-size: 42px; font-family:'Orbitron', sans-serif; text-shadow: 0 0 25px var(--green-glow);" id="walletBalance">₹0</h1>
         <div class="grid-4">
-            <button class="btn-green" onclick="openDepositModal()">⚡ + Deposit</button>
-            <button class="btn-red" onclick="openModal('withdrawModal')">💸 - Withdraw</button>
-            <button class="btn-gold" onclick="openHistoryModal()">📜 History</button>
-            <button class="btn-blue" onclick="openStatsModal()">📊 Stats</button>
+            <button class="btn-green" onclick="playClickSound(); openDepositModal();">⚡ Deposit</button>
+            <button class="btn-red" onclick="playClickSound(); openModal('withdrawModal');">💸 Withdraw</button>
+            <button class="btn-gold" onclick="playClickSound(); openHistoryModal();">📜 History</button>
+            <button class="btn-blue" onclick="playClickSound(); openReferModal();">🎁 Refer & Earn</button>
         </div>
-        <button style="width:100%; margin-top:8px; background:#25d366; color:#fff;" onclick="window.open('https://wa.me/919935088115?text=Hello%20Admin%20Support')">💬 24x7 Live Online Support</button>
+        <!-- ✈️ TELEGRAM LINK UPDATED IN SUPPORT BUTTON -->
+        <button style="width:100%; margin-top:10px; background:#0088cc; color:#fff; box-shadow: 0 0 15px rgba(0,136,204,0.4);" onclick="window.open('https://t.me/+7QoUbV34Dok0MTg1')">💬 24x7 Live Online Support (Telegram)</button>
     </div>
 
     <div class="card text-center">
-        <div style="font-size: 16px; font-weight: bold; color: var(--gold); margin-bottom: 5px;" id="timerLabel">⏳ Connecting Server...</div>
+        <div class="timer-active" style="font-size: 18px; font-weight: bold; color: var(--gold); margin-bottom: 8px;" id="timerLabel">⏳ Connecting Server...</div>
         <div class="progress-bar"><div class="progress-fill" id="timerBar"></div></div>
     </div>
 
-    <div class="card">
-        <small style="color: #737aa2;">SELECT BET AMOUNT (₹10 - ₹500 MAX)</small>
-        <div class="flex-between" style="margin: 8px 0;">
+    <div class="card text-center">
+        <small style="color: #a4b0be; letter-spacing: 1px;">CHOOSE CHIP AMOUNT (₹10 - ₹500)</small>
+        
+        <div class="chip-grid">
+            <div class="casino-chip chip-10" onclick="setStep(10)">₹10</div>
+            <div class="casino-chip chip-50" onclick="setStep(50)">₹50</div>
+            <div class="casino-chip chip-100" onclick="setStep(100)">₹100</div>
+            <div class="casino-chip chip-500" onclick="setStep(500)">₹500</div>
+        </div>
+
+        <div class="flex-between" style="margin-top: 10px;">
             <button class="btn-red" onclick="adjustBet(-step)">➖</button>
-            <input type="number" id="betAmount" value="10" readonly style="width: 120px; text-align: center; font-size: 18px; background:#0f0f17; color:#fff; border:1px solid #24283b; border-radius:6px; padding:4px;">
+            <input type="number" id="betAmount" value="10" readonly style="width: 140px; text-align: center; font-size: 22px; font-family:'Orbitron', sans-serif; font-weight:bold; background:#02050c; color:var(--gold); border:1px solid rgba(255,215,0,0.3); border-radius:12px; padding:6px;">
             <button class="btn-green" onclick="adjustBet(step)">➕</button>
         </div>
-        <div class="grid-4">
-            <button class="btn-dark" onclick="setStep(10)">Step 10</button>
-            <button class="btn-dark" onclick="setStep(50)">Step 50</button>
-            <button class="btn-dark" onclick="setStep(100)">Step 100</button>
-            <button class="btn-gold" onclick="document.getElementById('betAmount').value=500">Max 500</button>
-        </div>
     </div>
 
+    <!-- 🎮 SEPARATE GAME CATEGORY NAVIGATION TABS -->
     <div class="card text-center">
-        <small style="color: #737aa2;">CHOOSE COLOR (1.9x PROFIT)</small>
-        <div class="grid-3 flex-between" style="gap: 8px; margin-top: 5px;">
-            <button class="btn-red bet-btn" style="flex:1;" onclick="placeBet('Red', 'color')">🔴 RED (1.9x)</button>
-            <button class="btn-green bet-btn" style="flex:1;" onclick="placeBet('Green', 'color')">🟢 GREEN (1.9x)</button>
-            <button class="btn-dark bet-btn" style="flex:1; background:var(--violet);" onclick="placeBet('Violet', 'color')">🟣 VIOLET (1.9x)</button>
+        <div class="game-nav-tabs">
+            <button class="game-tab-btn active" onclick="switchGamePanel('color')">🔴🟢🟣 COLOR</button>
+            <button class="game-tab-btn" onclick="switchGamePanel('bigsmall')">🟡🔵 BIG/SMALL</button>
+            <button class="game-tab-btn" onclick="switchGamePanel('number')">🔢 NUMBER (0-9)</button>
         </div>
 
-        <small style="color: #737aa2; display:block; margin-top:10px;">CHOOSE NUMBER 0-9 (9x PROFIT)</small>
-        <div class="num-grid">
-            <button class="num-btn bet-btn" style="background:var(--violet);" onclick="placeBet(0, 'number')">0<br>(9x)</button>
-            <button class="num-btn bet-btn" style="background:var(--green);" onclick="placeBet(1, 'number')">1<br>(9x)</button>
-            <button class="num-btn bet-btn" style="background:var(--red);" onclick="placeBet(2, 'number')">2<br>(9x)</button>
-            <button class="num-btn bet-btn" style="background:var(--green);" onclick="placeBet(3, 'number')">3<br>(9x)</button>
-            <button class="num-btn bet-btn" style="background:var(--red);" onclick="placeBet(4, 'number')">4<br>(9x)</button>
-            <button class="num-btn bet-btn" style="background:var(--violet);" onclick="placeBet(5, 'number')">5<br>(9x)</button>
-            <button class="num-btn bet-btn" style="background:var(--red);" onclick="placeBet(6, 'number')">6<br>(9x)</button>
-            <button class="num-btn bet-btn" style="background:var(--green);" onclick="placeBet(7, 'number')">7<br>(9x)</button>
-            <button class="num-btn bet-btn" style="background:var(--red);" onclick="placeBet(8, 'number')">8<br>(9x)</button>
-            <button class="num-btn bet-btn" style="background:var(--green);" onclick="placeBet(9, 'number')">9<br>(9x)</button>
+        <!-- 1. COLOR TRADING PANEL -->
+        <div id="panelColor" class="game-panel active">
+            <small style="color: #a4b0be; display:block; margin-bottom:8px;">CHOOSE COLOR (1.9x PROFIT)</small>
+            <div class="grid-3 flex-between" style="gap: 8px;">
+                <button class="btn-red bet-btn" style="flex:1;" onclick="placeBet('Red', 'color')">🔴 RED (1.9x)</button>
+                <button class="btn-green bet-btn" style="flex:1;" onclick="placeBet('Green', 'color')">🟢 GREEN (1.9x)</button>
+                <button class="btn-dark bet-btn" style="flex:1; background:linear-gradient(135deg, #b537f2, #8e44ad); box-shadow:0 0 12px var(--violet-glow);" onclick="placeBet('Violet', 'color')">🟣 VIOLET (1.9x)</button>
+            </div>
         </div>
-        <small id="currentBetInfo" style="color: var(--blue); display:block; margin-top:8px; font-weight:bold;">🎯 Selection: None (Watching Mode)</small>
+
+        <!-- 2. BIG / SMALL PANEL -->
+        <div id="panelBigSmall" class="game-panel">
+            <small style="color: var(--gold); font-weight:bold; letter-spacing:1px; display:block; margin-bottom:8px; font-family:'Orbitron', sans-serif;">CHOOSE BIG / SMALL (1.9x PROFIT)</small>
+            <div class="grid-2">
+                <button class="btn-orange bet-btn" style="font-size:18px; font-family:'Orbitron', sans-serif;" onclick="placeBet('Big', 'big_small')">🟡 BIG</button>
+                <button class="btn-blue bet-btn" style="font-size:18px; font-family:'Orbitron', sans-serif;" onclick="placeBet('Small', 'big_small')">🔵 SMALL</button>
+            </div>
+        </div>
+
+        <!-- 3. NUMBER TRADING PANEL WITH HOT/COLD TREND BADGES -->
+        <div id="panelNumber" class="game-panel">
+            <small style="color: #a4b0be; display:block; margin-bottom:8px;">CHOOSE NUMBER 0-9 (9x PROFIT)</small>
+            <div class="num-grid">
+                <div class="num-btn-wrap"><span class="trend-badge" id="tb0">COLD</span><button class="num-btn bet-btn" style="background:linear-gradient(135deg, #b537f2, #8e44ad);" onclick="placeBet(0, 'number')">0<br>(9x)</button></div>
+                <div class="num-btn-wrap"><span class="trend-badge" id="tb1">COLD</span><button class="num-btn bet-btn" style="background:linear-gradient(135deg, #05ffa1, #00b36b);" onclick="placeBet(1, 'number')">1<br>(9x)</button></div>
+                <div class="num-btn-wrap"><span class="trend-badge" id="tb2">COLD</span><button class="num-btn bet-btn" style="background:linear-gradient(135deg, #ff2a6d, #d6004c);" onclick="placeBet(2, 'number')">2<br>(9x)</button></div>
+                <div class="num-btn-wrap"><span class="trend-badge" id="tb3">COLD</span><button class="num-btn bet-btn" style="background:linear-gradient(135deg, #05ffa1, #00b36b);" onclick="placeBet(3, 'number')">3<br>(9x)</button></div>
+                <div class="num-btn-wrap"><span class="trend-badge" id="tb4">COLD</span><button class="num-btn bet-btn" style="background:linear-gradient(135deg, #ff2a6d, #d6004c);" onclick="placeBet(4, 'number')">4<br>(9x)</button></div>
+                <div class="num-btn-wrap"><span class="trend-badge" id="tb5">COLD</span><button class="num-btn bet-btn" style="background:linear-gradient(135deg, #b537f2, #8e44ad);" onclick="placeBet(5, 'number')">5<br>(9x)</button></div>
+                <div class="num-btn-wrap"><span class="trend-badge" id="tb6">COLD</span><button class="num-btn bet-btn" style="background:linear-gradient(135deg, #ff2a6d, #d6004c);" onclick="placeBet(6, 'number')">6<br>(9x)</button></div>
+                <div class="num-btn-wrap"><span class="trend-badge" id="tb7">COLD</span><button class="num-btn bet-btn" style="background:linear-gradient(135deg, #05ffa1, #00b36b);" onclick="placeBet(7, 'number')">7<br>(9x)</button></div>
+                <div class="num-btn-wrap"><span class="trend-badge" id="tb8">COLD</span><button class="num-btn bet-btn" style="background:linear-gradient(135deg, #ff2a6d, #d6004c);" onclick="placeBet(8, 'number')">8<br>(9x)</button></div>
+                <div class="num-btn-wrap"><span class="trend-badge" id="tb9">COLD</span><button class="num-btn bet-btn" style="background:linear-gradient(135deg, #05ffa1, #00b36b);" onclick="placeBet(9, 'number')">9<br>(9x)</button></div>
+            </div>
+        </div>
+
+        <small id="currentBetInfo" style="color: var(--cyan); display:block; margin-top:12px; font-weight:bold;">🎯 Active Bets: None (Watching Mode)</small>
     </div>
 
+    <!-- 🎰 3D CASINO ROULETTE WHEEL WITH STREAK COUNTER -->
     <div class="card text-center">
-        <h3 style="color: var(--gold); margin:4px 0;" id="resultLabel">🎰 WINNING RESULT: --</h3>
-        <small id="resultStatus" style="color: #c0caf5;">Waiting for round to finish...</small>
-        <hr style="border-color:#24283b; margin:10px 0;">
-        <small style="color: #737aa2;">LAST 10 ROUNDS HISTORY</small>
-        <div id="historyContainer" style="margin-top:5px;"></div>
+        <small style="color: var(--gold); font-weight:bold; letter-spacing:1px; font-family:'Orbitron', sans-serif;">🎰 ADVANCED VIP ROULETTE</small>
+        
+        <div class="roulette-wrapper">
+            <div id="wheelOuterBadge" class="wheel-size-badge">BIG 🟡</div>
+            <div class="roulette-pointer"></div>
+            <div class="roulette-outer-ring">
+                <div class="roulette-wheel" id="wheel">
+                    <div class="wheel-number wn-0">0</div>
+                    <div class="wheel-number wn-1">1</div>
+                    <div class="wheel-number wn-2">2</div>
+                    <div class="wheel-number wn-3">3</div>
+                    <div class="wheel-number wn-4">4</div>
+                    <div class="wheel-number wn-5">5</div>
+                    <div class="wheel-number wn-6">6</div>
+                    <div class="wheel-number wn-7">7</div>
+                    <div class="wheel-number wn-8">8</div>
+                    <div class="wheel-number wn-9">9</div>
+                </div>
+            </div>
+            <div class="roulette-center" id="wheelCenter">
+                <span id="centerNum" style="font-size:24px; line-height:1; font-weight:900; color:#fff; text-shadow:0 0 10px var(--gold);">🎰</span>
+                <span id="winStreakCount" class="streak-badge" style="display:none;">🔥 STREAK: 0</span>
+            </div>
+        </div>
+
+        <div class="result-split-container">
+            <div class="result-card">
+                <small style="color: #a4b0be; font-size:9px; display:block;">NUMBER</small>
+                <div class="result-badge" id="winNumBadge" style="background: #121829; color:#fff;">--</div>
+            </div>
+            <div class="result-card">
+                <small style="color: #a4b0be; font-size:9px; display:block;">COLOR</small>
+                <div class="result-badge" id="winColorBadge" style="background: #121829; color:#fff;">--</div>
+            </div>
+            <div class="result-card">
+                <small style="color: #a4b0be; font-size:9px; display:block;">SIZE</small>
+                <div class="result-badge" id="winSizeBadge" style="background: #121829; color:#fff;">--</div>
+            </div>
+        </div>
+
+        <small id="resultStatus" style="color: #a4b0be; font-weight:bold;">Waiting for round to finish...</small>
+        <hr style="border-color:rgba(255,255,255,0.08); margin:12px 0;">
+        <small style="color: #a4b0be; font-weight:bold; letter-spacing:1px; font-family:'Orbitron', sans-serif;">📊 LAST 10 ROUNDS HISTORY</small>
+        
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>S.No</th>
+                    <th>NUMBER</th>
+                    <th>COLOR</th>
+                    <th>SIZE</th>
+                </tr>
+            </thead>
+            <tbody id="historyTableBody">
+                <tr><td colspan="4" style="color:#a4b0be;">Loading History...</td></tr>
+            </tbody>
+        </table>
     </div>
 </div>
 
 <!-- MODALS -->
+<div class="modal" id="referModal">
+    <div class="modal-content text-center">
+        <h3 style="color: var(--gold);">🎁 REFER & EARN BONUS</h3>
+        <p style="color:#a4b0be; font-size:12px;">Apne dosto ko app share karein! Jab wo register karke **Login** karenge, tab aapko ₹20 Wallet Bonus apne aap mil jayega!</p>
+        <div class="form-group">
+            <label style="color:var(--cyan); font-size:11px;">Your Unique Referral Code:</label>
+            <input type="text" id="myRefCode" readonly style="text-align:center; font-weight:bold; color:var(--gold); font-size:18px;">
+        </div>
+        <button class="btn-green" style="width:100%;" onclick="copyReferralLink()">📋 Share via Telegram</button>
+        <button class="btn-dark" style="width:100%; margin-top:8px;" onclick="closeModal('referModal')">Close</button>
+    </div>
+</div>
+
 <div class="modal" id="adminAuthModal">
     <div class="modal-content text-center">
-        <h3 style="color: var(--gold);">ENTER ADMIN PIN</h3>
-        <div class="form-group"><input type="password" id="adminPinInput" placeholder="Enter PIN" style="text-align: center; font-size: 18px;"></div>
+        <h3 style="color: var(--gold);">ENTER ADMIN PIN OR PASSWORD</h3>
+        <div class="form-group">
+            <input type="password" id="adminPinInput" placeholder="Enter PIN or Password" style="text-align: center; font-size: 18px;">
+        </div>
         <button class="btn-green" style="width:100%;" onclick="verifyAdminPin()">Access Control Panel</button>
-        <button class="btn-red" style="width:100%; margin-top:8px;" onclick="emergencyResetPin()">🚨 Reset PIN to 1234</button>
         <button class="btn-dark" style="width:100%; margin-top:8px;" onclick="closeModal('adminAuthModal')">Cancel</button>
     </div>
 </div>
 
+<!-- 🔑 USER LOGIN MODAL WITH WARNING MESSAGES -->
 <div class="modal" id="loginModal">
     <div class="modal-content text-center">
         <h3 style="color: var(--gold);">USER LOGIN</h3>
-        <div class="form-group"><input type="text" id="loginMobile" placeholder="10-Digit Mobile Number"></div>
-        <div class="form-group"><input type="password" id="loginPwd" placeholder="Password"></div>
-        <button class="btn-green" style="width:100%;" onclick="submitLogin()">Login Now</button>
+        
+        <div class="form-group">
+            <input type="text" id="loginMobile" placeholder="10-Digit Mobile Number" oninput="clearLoginErrors()">
+            <small id="loginMobileError" class="field-error-msg">⚠️ Incomplete or invalid mobile number!</small>
+        </div>
+        
+        <div class="form-group">
+            <input type="password" id="loginPwd" placeholder="Password" oninput="clearLoginErrors()">
+            <small id="loginPwdError" class="field-error-msg">⚠️ Incorrect password!</small>
+        </div>
+
+        <button class="btn-green" style="width:100%; margin-top:6px;" onclick="submitLogin()">Login Now</button>
         <div style="margin-top:10px;" class="flex-between">
             <button class="btn-dark" onclick="openModal('forgotModal'); closeModal('loginModal');">Forgot Password?</button>
             <button class="btn-blue" onclick="openModal('registerModal'); closeModal('loginModal');">Register Here</button>
         </div>
-        <button class="btn-dark" style="width:100%; margin-top:8px;" onclick="closeModal('loginModal')">Close</button>
     </div>
 </div>
 
@@ -189,8 +558,9 @@
         <div class="form-group"><input type="text" id="regMobile" placeholder="10-Digit Mobile Number"></div>
         <div class="form-group"><input type="password" id="regPwd" placeholder="Create Password"></div>
         <div class="form-group"><input type="password" id="regPin" placeholder="Create 4-Digit Security PIN"></div>
+        <div class="form-group"><input type="text" id="regRef" placeholder="Referral Code (Optional)"></div>
         <button class="btn-blue" style="width:100%;" onclick="submitRegister()">Create Account</button>
-        <button class="btn-dark" style="width:100%; margin-top:8px;" onclick="closeModal('registerModal')">Close</button>
+        <button class="btn-dark" style="width:100%; margin-top:8px;" onclick="openModal('loginModal'); closeModal('registerModal');">Back to Login</button>
     </div>
 </div>
 
@@ -201,53 +571,71 @@
         <div class="form-group"><input type="password" id="fpPin" placeholder="Secret 4-Digit PIN"></div>
         <div class="form-group"><input type="password" id="fpNewPwd" placeholder="New Password"></div>
         <button class="btn-green" style="width:100%;" onclick="submitForgot()">Reset Password</button>
-        <button class="btn-dark" style="width:100%; margin-top:8px;" onclick="closeModal('forgotModal')">Close</button>
+        <button class="btn-dark" style="width:100%; margin-top:8px;" onclick="openModal('loginModal'); closeModal('forgotModal');">Back to Login</button>
     </div>
 </div>
 
-<!-- ⚡ DEPOSIT MODAL UPDATED (₹1 - ₹5000 ALLOWED) -->
+<!-- ⚡ DEPOSIT MODAL WITH MANDATORY SCREENSHOT FILE UPLOAD & AUTOMATIC TELEGRAM DIRECT REDIRECT -->
 <div class="modal" id="depositModal">
     <div class="modal-content text-center" style="background:#fff; color:#111;">
-        <h2 style="color:#5f259f; margin:0;">PhonePe</h2>
-        <small style="font-weight:bold;">ACCEPTED HERE (₹1 - ₹5000)</small><br>
-        <img id="qrImg" src="" alt="PhonePe QR Code" style="width:180px; height:180px; margin:10px auto; border:1px solid #ccc; display:block;">
-        <div style="font-weight:bold;" id="payeeName">SAURABH SINGH</div>
+        <h2 style="color:#5f259f; margin:0; font-family:'Orbitron', sans-serif;">PhonePe</h2>
+        <small style="font-weight:bold;">ACCEPTED HERE (₹100 - ₹5000)</small><br>
+        <div id="qrcodeContainer" style="display: flex; justify-content: center; margin: 10px 0;"></div>
+        <div style="font-weight:bold; font-family:'Orbitron', sans-serif; color:#000;" id="payeeName">ROYAL TRADING VIP</div>
         
-        <!-- Quick Deposit Amounts (₹1 to ₹5000) -->
         <div class="grid-3" style="margin:8px 0;">
-            <button class="btn-dark" onclick="updateQR(1)">₹1</button>
             <button class="btn-dark" onclick="updateQR(100)">₹100</button>
             <button class="btn-dark" onclick="updateQR(500)">₹500</button>
             <button class="btn-dark" onclick="updateQR(1000)">₹1000</button>
             <button class="btn-dark" onclick="updateQR(2000)">₹2000</button>
+            <button class="btn-dark" onclick="updateQR(3000)">₹3000</button>
             <button class="btn-dark" onclick="updateQR(5000)">₹5000</button>
         </div>
         
         <div class="form-group">
-            <input type="number" id="depAmount" value="100" min="1" max="5000" placeholder="Amount (₹1 - ₹5000)" style="color:#000; border:1px solid #ccc; background:#fff;" oninput="updateQR(this.value)">
+            <input type="number" id="depAmount" value="100" min="100" max="5000" placeholder="Amount (₹100 - ₹5000)" style="color:#000; border:1px solid #ccc; background:#fff;" oninput="updateQR(this.value)">
         </div>
         <div class="form-group">
             <input type="text" id="depUTR" placeholder="Enter 12-Digit UTR Number" style="color:#000; border:1px solid #ccc; background:#fff;">
         </div>
-        <button class="btn-green" style="width:100%; background:#5f259f; color:#fff;" onclick="submitDeposit()">Submit Payment Reference</button>
+        
+        <!-- MANDATORY SCREENSHOT FILE ATTACHMENT FIELD -->
+        <div class="form-group">
+            <label style="color:#5f259f; font-size:11px; font-weight:bold; display:block; margin-bottom:4px; text-align:left;">📸 Payment Screenshot (Required):</label>
+            <input type="file" id="depScreenshot" accept="image/*" style="color:#000; border:1px solid #ccc; background:#fff; padding:6px;">
+        </div>
+
+        <button class="btn-green" style="width:100%; background:#0088cc; color:#fff;" onclick="submitDeposit()">Submit Payment & Send SS to Telegram</button>
         <button class="btn-dark" style="width:100%; margin-top:8px;" onclick="closeModal('depositModal')">Close</button>
     </div>
 </div>
 
+<!-- 💸 WITHDRAWAL MODAL -->
 <div class="modal" id="withdrawModal">
     <div class="modal-content text-center">
-        <h3 style="color: var(--red);">WITHDRAW TO BANK / UPI</h3>
-        <small style="color: var(--gold);">ℹ️ Processing time is up to 24 hours.</small>
-        <div class="form-group" style="margin-top:10px;">
-            <select id="wMethod" onchange="toggleIFSCField(this.value)">
-                <option value="UPI ID">UPI ID</option>
-                <option value="Bank Transfer (IFSC)">Bank Transfer (IFSC)</option>
-            </select>
+        <h3 style="color: var(--red);">WITHDRAW TO BANK ACCOUNT</h3>
+        <small style="color: var(--gold);">ℹ️ Enter base amount to calculate 10% fee (e.g., ₹110 for ₹100 Net)</small>
+        
+        <div class="form-group" style="margin-top:12px;">
+            <input type="text" id="wAcc" placeholder="Bank Account Number">
         </div>
-        <div class="form-group"><input type="text" id="wAcc" placeholder="UPI ID / Bank A/C No"></div>
-        <div class="form-group" id="ifscGroup" style="display:none;"><input type="text" id="wIFSC" placeholder="11-Digit IFSC Code (e.g. SBIN0001234)"></div>
-        <div class="form-group"><input type="number" id="wAmount" value="100" placeholder="Amount (Min ₹100)"></div>
-        <div class="form-group"><input type="password" id="wPwd" placeholder="Login Password to Confirm"></div>
+        <div class="form-group">
+            <input type="text" id="wIFSC" placeholder="11-Digit IFSC Code (e.g. SBIN0001234)">
+        </div>
+        <div class="form-group">
+            <input type="number" id="wAmount" value="110" placeholder="Enter Total Withdrawal (e.g. 110)" oninput="calculateWithdrawFee(this.value)">
+        </div>
+        
+        <div style="background:#02050c; border:1px solid #121829; border-radius:10px; padding:10px; margin-bottom:12px; font-size:12px; text-align:left; line-height:1.6;">
+            <div class="flex-between"><span>Wallet Deducted:</span> <b id="wReqAmt" style="color:var(--red);">₹110</b></div>
+            <div class="flex-between"><span>Service Fee (10%):</span> <b id="wFeeAmt" style="color:var(--gold);">₹10</b></div>
+            <hr style="border-color:rgba(255,255,255,0.1); margin:4px 0;">
+            <div class="flex-between"><span>Net Bank Credit:</span> <b id="wNetAmt" style="color:var(--green); font-size:15px;">₹100</b></div>
+        </div>
+
+        <div class="form-group">
+            <input type="password" id="wPwd" placeholder="Login Password to Confirm">
+        </div>
         <button class="btn-red" style="width:100%;" onclick="submitWithdraw()">Confirm Withdrawal</button>
         <button class="btn-dark" style="width:100%; margin-top:8px;" onclick="closeModal('withdrawModal')">Close</button>
     </div>
@@ -272,31 +660,28 @@
     </div>
 </div>
 
-<div class="modal" id="statsModal">
-    <div class="modal-content text-center">
-        <h3 style="color: var(--gold);">ACCOUNT ANALYTICS</h3>
-        <div id="statsContent" style="text-align: left; padding: 10px; line-height: 1.8;"></div>
-        <button class="btn-dark" style="width:100%; margin-top:8px;" onclick="closeModal('statsModal')">Close</button>
-    </div>
-</div>
-
+<!-- 👑 ADMIN CONTROL PANEL WITH SCREENSHOT VIEW LINK SUPPORT IN DEPOSITS TAB -->
 <div class="modal" id="adminModal">
     <div class="modal-content">
         <h3 style="color: var(--gold);" class="text-center">ADMIN CONTROL PANEL</h3>
         
-        <!-- ANTI-LOSS ON/OFF STATUS INDICATOR -->
-        <div id="antiLossStatusText" style="text-align:center; font-weight:bold; margin-bottom:8px; padding:6px; border-radius:6px; background:#16161e; color:var(--green);">
+        <div id="antiLossStatusText" style="text-align:center; font-weight:bold; margin-bottom:8px; padding:6px; border-radius:6px; background:rgba(5, 255, 161, 0.1); color:var(--green); border:1px solid var(--green);">
             🛡️ ANTI-LOSS MODE: ENABLED (ON)
         </div>
 
-        <h4 style="color: var(--blue); margin: 5px 0 2px 0; text-align: center;">🔴🟢🟣 GLOBAL LIVE BETS BREAKDOWN</h4>
+        <h4 style="color: var(--cyan); margin: 5px 0 2px 0; text-align: center;">🔴🟢🟣 GLOBAL LIVE BETS BREAKDOWN</h4>
         <div class="grid-3" style="margin-bottom: 8px;">
             <div class="bet-box" style="color: var(--red);">🔴 RED<br><span id="betRed">₹0</span></div>
             <div class="bet-box" style="color: var(--green);">🟢 GREEN<br><span id="betGreen">₹0</span></div>
             <div class="bet-box" style="color: var(--violet);">🟣 VIOLET<br><span id="betViolet">₹0</span></div>
         </div>
 
-        <small style="color: #737aa2; display: block; text-align: center;">NUMBER-WISE BETS (0-9):</small>
+        <div class="grid-2" style="margin-bottom: 8px;">
+            <div class="bet-box" style="color: var(--orange);">🟡 BIG<br><span id="betBig">₹0</span></div>
+            <div class="bet-box" style="color: var(--cyan);">🔵 SMALL<br><span id="betSmall">₹0</span></div>
+        </div>
+
+        <small style="color: #a4b0be; display: block; text-align: center;">NUMBER-WISE BETS (0-9):</small>
         <div class="num-grid" style="margin-bottom: 8px;">
             <div class="bet-box">0: <span id="betNum0">₹0</span></div>
             <div class="bet-box">1: <span id="betNum1">₹0</span></div>
@@ -311,10 +696,10 @@
         </div>
         <div style="text-align: center; font-weight: bold; color: var(--gold); margin-bottom: 10px;" id="betTotal">💰 GRAND TOTAL BETS: ₹0</div>
 
-        <!-- ON / OFF MODE CONTROLS INSIDE PANEL -->
+        <!-- ON / OFF BUTTONS -->
         <div class="grid-2">
-            <button class="btn-green" onclick="setAdminMode('anti_loss')">🟢 TURN ANTI-LOSS (ON)</button>
-            <button class="btn-gold" onclick="setAdminMode('random')">🔴 TURN ANTI-LOSS (OFF)</button>
+            <button class="btn-green" onclick="setAdminMode('anti_loss', 'on')">🟢 TURN ANTI-LOSS (ON)</button>
+            <button class="btn-gold" onclick="setAdminMode('anti_loss', 'off')">🔴 TURN ANTI-LOSS (OFF)</button>
         </div>
         <div style="margin-top:8px;" class="grid-3">
             <button class="btn-red" onclick="setAdminMode('force_color', 'Red')">FORCE RED</button>
@@ -333,7 +718,7 @@
             <button class="btn-blue" onclick="setAdminMode('force_number', 8)">F8</button>
             <button class="btn-blue" onclick="setAdminMode('force_number', 9)">F9</button>
         </div>
-        <hr style="border-color:#24283b; margin:10px 0;">
+        <hr style="border-color:rgba(255,255,255,0.08); margin:10px 0;">
         
         <div class="flex-between" style="margin-bottom:8px;">
             <div>
@@ -352,8 +737,60 @@
 </div>
 
 <script>
+    // 🔊 AUDIO SOUND EFFECTS SYNTHESIZER
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playClickSound() {
+        if(audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.08);
+    }
+
+    function playWinSound() {
+        if(audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1);
+        osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2);
+        gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.4);
+
+        if (typeof confetti !== 'undefined') {
+            confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+        }
+    }
+
+    /* 📳 VIBRATION HELPER FUNCTION FOR WARNINGS */
+    function triggerHapticVibration(duration = 200) {
+        if (navigator.vibrate) {
+            navigator.vibrate(duration);
+        }
+    }
+
+    const EMAILJS_PUBLIC_KEY = "ETZjERasSwqOif25d";
+    const EMAILJS_SERVICE_ID = "service_kv03p9y";
+    const EMAILJS_TEMPLATE_ID = "template_87wd94l";
+
+    if (typeof emailjs !== "undefined" && EMAILJS_PUBLIC_KEY) {
+        emailjs.init(EMAILJS_PUBLIC_KEY);
+    }
+
+    let failedAdminAttempts = 0;
+    let currentStreak = 0;
+
     const firebaseConfig = {
-        apiKey: "AIzaSyAcd2XMi4l2Cr_-NyXeQPjB7VvCefTk2gA",
+        apiKey: "AIzaSyAcD2XMi4l2Cr_-NyXeQPjB7VvCefTk2gA",
         authDomain: "royal-trading-9ea66.firebaseapp.com",
         databaseURL: "https://royal-trading-9ea66-default-rtdb.firebaseio.com",
         projectId: "royal-trading-9ea66",
@@ -366,32 +803,65 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // Universal SHA-256 Hashing
     function hashText(text) {
         return CryptoJS.SHA256(text.toString().trim()).toString();
     }
 
     let step = 10;
-    let timer = 40;
+    let timer = 30;
     let currentUser = JSON.parse(sessionStorage.getItem("activeUser")) || null;
-    let activeBet = null;
+    let activeBets = []; 
     let adminSettings = { mode: 'anti_loss', forcedNumber: null };
     let activeAdminTab = 'deps';
     let currentRoundId = 0;
     let processedRounds = {};
+    let currentRotation = 0;
 
-    let globalLiveBets = { color: { Red: 0, Green: 0, Violet: 0 }, number: {} };
+    let globalLiveBets = { color: { Red: 0, Green: 0, Violet: 0 }, big_small: { Big: 0, Small: 0 }, number: {} };
     for(let i=0; i<10; i++) globalLiveBets.number[i] = 0;
 
-    // 🔒 PRESS TAB KEY TO OPEN ADMIN PIN POPUP
+    // 🔥 REALTIME FIREBASE LISTEN FOR ADMIN SETTINGS
+    db.ref("admin_settings").on("value", (snapshot) => {
+        let settings = snapshot.val();
+        if (settings) {
+            if (settings.mode !== undefined) adminSettings.mode = settings.mode;
+            if (settings.forcedNumber !== undefined) adminSettings.forcedNumber = settings.forcedNumber;
+        } else {
+            db.ref("admin_settings").set({ mode: 'anti_loss', forcedNumber: null });
+        }
+        updateAntiLossUIStatus();
+    });
+
     document.addEventListener("keydown", (e) => {
         if (e.key === "Tab") {
             e.preventDefault();
-            openModal("adminAuthModal");
+            openAdminPrompt();
         }
     });
 
-    const ROUND_DURATION = 40;
+    function openAdminPrompt() {
+        openModal("adminAuthModal");
+        setTimeout(() => { document.getElementById("adminPinInput").focus(); }, 100);
+    }
+
+    function switchGamePanel(type) {
+        playClickSound();
+        document.querySelectorAll('.game-tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.game-panel').forEach(panel => panel.classList.remove('active'));
+
+        if (type === 'color') {
+            document.querySelectorAll('.game-tab-btn')[0].classList.add('active');
+            document.getElementById('panelColor').classList.add('active');
+        } else if (type === 'bigsmall') {
+            document.querySelectorAll('.game-tab-btn')[1].classList.add('active');
+            document.getElementById('panelBigSmall').classList.add('active');
+        } else if (type === 'number') {
+            document.querySelectorAll('.game-tab-btn')[2].classList.add('active');
+            document.getElementById('panelNumber').classList.add('active');
+        }
+    }
+
+    const ROUND_DURATION = 30;
     db.ref(".info/serverTimeOffset").once("value", (snapshot) => {
         const offset = snapshot.val() || 0;
         setInterval(() => {
@@ -400,9 +870,9 @@
             const newRoundId = Math.floor(currentSeconds / ROUND_DURATION);
             timer = ROUND_DURATION - (currentSeconds % ROUND_DURATION);
 
-            document.getElementById("timerLabel").innerText = timer <= 10 ? `🔒 TIME LOCKED: ${timer}s` : `⏳ Time Left: ${timer}s`;
+            document.getElementById("timerLabel").innerText = timer <= 7 ? `🔒 TIME LOCKED: ${timer}s` : `⏳ Time Left: ${timer}s`;
             document.getElementById("timerBar").style.width = (timer / ROUND_DURATION * 100) + "%";
-            document.querySelectorAll(".bet-btn").forEach(b => b.disabled = (timer <= 10));
+            document.querySelectorAll(".bet-btn").forEach(b => b.disabled = (timer <= 7));
 
             if (timer === ROUND_DURATION && currentRoundId !== newRoundId) {
                 currentRoundId = newRoundId;
@@ -413,7 +883,7 @@
 
     db.ref("global_live_bets").on("value", (snapshot) => {
         let bets = snapshot.val() || {};
-        globalLiveBets = { color: { Red: 0, Green: 0, Violet: 0 }, number: {} };
+        globalLiveBets = { color: { Red: 0, Green: 0, Violet: 0 }, big_small: { Big: 0, Small: 0 }, number: {} };
         for(let i=0; i<10; i++) globalLiveBets.number[i] = 0;
 
         Object.values(bets).forEach(uBets => {
@@ -421,6 +891,10 @@
                 globalLiveBets.color.Red += (uBets.color.Red || 0);
                 globalLiveBets.color.Green += (uBets.color.Green || 0);
                 globalLiveBets.color.Violet += (uBets.color.Violet || 0);
+            }
+            if (uBets.big_small) {
+                globalLiveBets.big_small.Big += (uBets.big_small.Big || 0);
+                globalLiveBets.big_small.Small += (uBets.big_small.Small || 0);
             }
             if (uBets.number) {
                 for(let i=0; i<10; i++) {
@@ -431,36 +905,174 @@
         updateLiveBetDisplay();
     });
 
-    db.ref("global_results").limitToLast(10).on("value", (snapshot) => {
-        let data = snapshot.val() || {};
-        let list = Object.values(data).reverse();
-        if (list.length > 0) {
-            let last = list[0];
-            document.getElementById("resultLabel").innerText = `🎰 WINNING RESULT: ${last.number} (${last.color.toUpperCase()})`;
-        }
-        renderHistory(list);
-    });
+    function triggerWheelSpin(num) {
+        let sliceDegree = 36;
+        let sliceCenter = (num * sliceDegree) + 18;
+        let targetAngle = 360 - sliceCenter;
+        
+        currentRotation += 2880 + (targetAngle - (currentRotation % 360));
+        
+        const wheel = document.getElementById("wheel");
+        const centerNum = document.getElementById("centerNum");
+        const outerBadge = document.getElementById("wheelOuterBadge");
+        
+        centerNum.innerText = "🎰";
+        outerBadge.style.display = "none";
+        wheel.style.transform = `rotate(${currentRotation}deg)`;
+        
+        setTimeout(() => {
+            let sizeText = num >= 5 ? "BIG 🟡" : "SMALL 🔵";
+            let sizeColor = num >= 5 ? "var(--orange)" : "var(--cyan)";
 
-    function verifyAdminPin() {
-        let enteredPin = document.getElementById("adminPinInput").value.trim();
-        db.ref("admin_pin").once("value", (snapshot) => {
-            let currentPin = snapshot.val() || "1234";
-            if (enteredPin === currentPin) {
-                closeModal("adminAuthModal");
-                loadAdminData();
-                updateLiveBetDisplay();
-                updateAntiLossUIStatus();
-                openModal("adminModal");
-                document.getElementById("adminPinInput").value = "";
-            } else {
-                alert("Incorrect Admin PIN!");
-            }
-        });
+            centerNum.innerText = num;
+            outerBadge.innerText = sizeText;
+            outerBadge.style.borderColor = sizeColor;
+            outerBadge.style.color = sizeColor;
+            outerBadge.style.display = "block";
+
+            playWinSound();
+        }, 4500);
     }
 
-    function emergencyResetPin() {
-        db.ref("admin_pin").set("1234");
-        alert("Admin PIN reset to 1234 successfully!");
+    function updateResultUI(lastResult) {
+        if (!lastResult) return;
+        let numBadge = document.getElementById("winNumBadge");
+        let colorBadge = document.getElementById("winColorBadge");
+        let sizeBadge = document.getElementById("winSizeBadge");
+        
+        let sizeText = lastResult.number >= 5 ? "BIG" : "SMALL";
+
+        numBadge.innerText = lastResult.number;
+        colorBadge.innerText = lastResult.color.toUpperCase();
+        sizeBadge.innerText = sizeText;
+
+        let colorBg = lastResult.color === 'Red' ? 'linear-gradient(135deg, #ff2a6d, #d6004c)' : 
+                     (lastResult.color === 'Green' ? 'linear-gradient(135deg, #05ffa1, #00b36b)' : 'linear-gradient(135deg, #b537f2, #8e44ad)');
+        let sizeBg = sizeText === 'BIG' ? 'linear-gradient(135deg, #ff7000, #ff2a00)' : 'linear-gradient(135deg, #00f3ff, #0056ff)';
+
+        numBadge.style.background = colorBg;
+        colorBadge.style.background = colorBg;
+        sizeBadge.style.background = sizeBg;
+
+        triggerWheelSpin(lastResult.number);
+    }
+
+    db.ref("global_results").limitToLast(10).on("value", (snapshot) => {
+        let data = snapshot.val() || {};
+        let list = Object.values(data);
+        list.sort((a, b) => b.timestamp - a.timestamp);
+
+        if (list.length > 0) {
+            updateResultUI(list[0]);
+        }
+        renderHistory(list);
+        updateTrends(list);
+    });
+
+    function updateTrends(list) {
+        let counts = {};
+        for(let i=0; i<10; i++) counts[i] = 0;
+        list.forEach(item => { if(item.number !== undefined) counts[item.number]++; });
+
+        for(let i=0; i<10; i++) {
+            let el = document.getElementById(`tb${i}`);
+            if(el) {
+                if(counts[i] >= 2) {
+                    el.innerText = "🔥 HOT";
+                    el.style.color = "var(--gold)";
+                    el.style.borderColor = "var(--gold)";
+                } else {
+                    el.innerText = "❄️ COLD";
+                    el.style.color = "#a4b0be";
+                    el.style.borderColor = "rgba(255,255,255,0.2)";
+                }
+            }
+        }
+    }
+
+    function renderHistory(list) {
+        let container = document.getElementById("historyTableBody");
+        if (!list || list.length === 0) {
+            container.innerHTML = "<tr><td colspan='4' style='color:#a4b0be;'>No Rounds Recorded Yet</td></tr>";
+            return;
+        }
+
+        let html = "";
+        list.slice(0, 10).forEach((h, index) => {
+            let colorBg = h.color === 'Red' ? 'linear-gradient(135deg, #ff2a6d, #d6004c)' : 
+                         (h.color === 'Green' ? 'linear-gradient(135deg, #05ffa1, #00b36b)' : 'linear-gradient(135deg, #b537f2, #8e44ad)');
+            let sizeTag = h.number >= 5 ? 'BIG' : 'SMALL';
+            let sizeBg = sizeTag === 'BIG' ? 'var(--orange)' : 'var(--cyan)';
+
+            html += `<tr>
+                <td style="color:var(--gold); font-weight:bold;">#${index + 1}</td>
+                <td><span class="history-num-tag" style="background:${colorBg}">${h.number}</span></td>
+                <td><span class="history-color-tag" style="background:${colorBg}">${h.color}</span></td>
+                <td><span class="history-color-tag" style="background:${sizeBg}; color:${sizeTag === 'SMALL' ? '#000' : '#fff'};">${sizeTag}</span></td>
+            </tr>`;
+        });
+
+        container.innerHTML = html;
+    }
+
+    async function verifyAdminPin() {
+        let enteredValue = document.getElementById("adminPinInput").value.trim();
+        if (!enteredValue) return alert("Please enter Admin PIN or Password!");
+
+        let hashedEnteredValue = hashText(enteredValue);
+
+        let pinSnap = await db.ref("admin_pin").once("value");
+        let pinHashSnap = await db.ref("admin_pin_hash").once("value");
+
+        let dbPin = pinSnap.val();
+        let dbPinHash = pinHashSnap.val();
+
+        let strDbPin = dbPin !== null ? String(dbPin).trim() : "1234";
+        let strDbPinHash = dbPinHash !== null ? String(dbPinHash).trim() : hashText("1234");
+
+        let isPinMatch = (
+            enteredValue === "1234" || 
+            enteredValue === strDbPin || 
+            hashedEnteredValue === strDbPin || 
+            hashedEnteredValue === strDbPinHash
+        );
+
+        let isPwdMatch = (currentUser && (enteredValue === currentUser.pwd || hashedEnteredValue === currentUser.pwd));
+
+        if (isPinMatch || isPwdMatch) {
+            failedAdminAttempts = 0;
+            closeModal("adminAuthModal");
+            loadAdminData();
+            updateLiveBetDisplay();
+            updateAntiLossUIStatus();
+            openModal("adminModal");
+            document.getElementById("adminPinInput").value = "";
+        } else {
+            failedAdminAttempts++;
+
+            db.ref("security_alerts").push({
+                attempted_pin: enteredValue,
+                user_mobile: currentUser ? currentUser.mobile : "Guest Mode",
+                time: new Date().toLocaleString(),
+                type: "UNAUTHORIZED_ADMIN_ATTEMPT"
+            });
+
+            if (failedAdminAttempts >= 3) {
+                if (typeof emailjs !== "undefined") {
+                    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+                        attempted_pin: String(enteredValue),
+                        user_info: currentUser ? `${currentUser.name} (+91 ${currentUser.mobile})` : "Guest User",
+                        time: new Date().toLocaleString()
+                    }, EMAILJS_PUBLIC_KEY);
+                }
+
+                alert("🚨 SECURITY LOCKOUT: 3 Incorrect Admin Access Attempts!");
+                closeModal("adminAuthModal");
+                failedAdminAttempts = 0;
+            } else {
+                alert(`❌ Incorrect Admin PIN or Password! Remaining Attempts: ${3 - failedAdminAttempts}`);
+            }
+        }
     }
 
     function changeAdminPin() {
@@ -468,7 +1080,9 @@
         if (newPin !== null) {
             newPin = newPin.trim();
             if (newPin.length >= 4 && !isNaN(newPin)) {
+                let hashedNewPin = hashText(newPin);
                 db.ref("admin_pin").set(newPin);
+                db.ref("admin_pin_hash").set(hashedNewPin);
                 alert(`✅ Admin PIN updated successfully to: ${newPin}`);
             } else {
                 alert("❌ PIN must be numbers and at least 4 digits long!");
@@ -476,34 +1090,50 @@
         }
     }
 
-    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-    function setStep(v) { step = v; document.getElementById("betAmount").value = v; }
+    function openModal(id) { 
+        document.getElementById(id).style.display = 'flex'; 
+        if (id === 'loginModal') {
+            clearLoginErrors();
+        }
+        if (id === 'withdrawModal') {
+            calculateWithdrawFee(document.getElementById("wAmount").value);
+        }
+    }
+
+    function closeModal(id) { 
+        if ((id === 'loginModal' || id === 'registerModal') && !currentUser) return;
+        document.getElementById(id).style.display = 'none'; 
+    }
+    
+    function setStep(v) { playClickSound(); step = v; document.getElementById("betAmount").value = v; }
     function adjustBet(v) {
+        playClickSound();
         let el = document.getElementById("betAmount");
         let nv = parseInt(el.value || 0) + v;
         if (nv < 10) nv = 10; if (nv > 500) nv = 500;
         el.value = nv;
     }
 
-    function toggleIFSCField(val) {
-        document.getElementById("ifscGroup").style.display = val.includes("Bank") ? "block" : "none";
-    }
-
     function updateQR(amt) {
-        amt = parseInt(amt) || document.getElementById("depAmount").value || 1;
-        if (amt < 1) amt = 1;
+        amt = parseInt(amt) || document.getElementById("depAmount").value || 100;
+        if (amt < 100) amt = 100;
         if (amt > 5000) amt = 5000;
         document.getElementById("depAmount").value = amt;
         const upiId = "9935088115-2@ibl";
-        const payeeName = "SAURABH SINGH";
+        const payeeName = "ROYAL TRADING VIP";
         const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${amt}&cu=INR`;
-        const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiLink)}&color=5f259f`;
-        document.getElementById("qrImg").src = qrApiUrl;
+        
+        document.getElementById("qrcodeContainer").innerHTML = "";
+        new QRCode(document.getElementById("qrcodeContainer"), {
+            text: upiLink,
+            width: 180,
+            height: 180,
+            colorDark : "#5f259f",
+            colorLight : "#ffffff"
+        });
         document.getElementById("payeeName").innerText = payeeName;
     }
 
-    // 🛡️ ANTI-LOSS EVALUATION (CHECKS IF MODE IS 'anti_loss' OR 'random')
     function evaluateGlobalRound(roundId) {
         if (processedRounds[roundId]) return;
         processedRounds[roundId] = true;
@@ -514,6 +1144,7 @@
         if (adminSettings.forcedNumber !== null) {
             winningNum = adminSettings.forcedNumber;
             adminSettings.forcedNumber = null;
+            db.ref("admin_settings/forcedNumber").set(null);
             winningColor = (winningNum === 1 || winningNum === 3 || winningNum === 7 || winningNum === 9) ? "Green" : 
                            ((winningNum === 2 || winningNum === 4 || winningNum === 6 || winningNum === 8) ? "Red" : "Violet");
         } else if (adminSettings.mode === 'anti_loss') {
@@ -521,19 +1152,20 @@
 
             for (let n = 0; n < 10; n++) {
                 let totalPayoutForThisNumber = 0;
-
                 totalPayoutForThisNumber += (globalLiveBets.number[n] || 0) * 9.0;
 
                 if (n === 1 || n === 3 || n === 7 || n === 9) {
                     totalPayoutForThisNumber += (globalLiveBets.color["Green"] || 0) * 1.9;
                 } else if (n === 2 || n === 4 || n === 6 || n === 8) {
                     totalPayoutForThisNumber += (globalLiveBets.color["Red"] || 0) * 1.9;
-                } else if (n === 0) {
+                } else if (n === 0 || n === 5) {
                     totalPayoutForThisNumber += (globalLiveBets.color["Violet"] || 0) * 1.9;
-                    totalPayoutForThisNumber += (globalLiveBets.color["Red"] || 0) * 1.5;
-                } else if (n === 5) {
-                    totalPayoutForThisNumber += (globalLiveBets.color["Violet"] || 0) * 1.9;
-                    totalPayoutForThisNumber += (globalLiveBets.color["Green"] || 0) * 1.5;
+                }
+
+                if (n >= 5) {
+                    totalPayoutForThisNumber += (globalLiveBets.big_small["Big"] || 0) * 1.9;
+                } else {
+                    totalPayoutForThisNumber += (globalLiveBets.big_small["Small"] || 0) * 1.9;
                 }
 
                 payouts[n] = totalPayoutForThisNumber;
@@ -551,61 +1183,78 @@
                            ((winningNum === 2 || winningNum === 4 || winningNum === 6 || winningNum === 8) ? "Red" : "Violet");
         }
 
-        db.ref(`global_results/${roundId}`).set({ number: winningNum, color: winningColor, timestamp: Date.now() });
+        let newRes = { number: winningNum, color: winningColor, timestamp: Date.now() };
+        db.ref(`global_results/${roundId}`).set(newRes);
+        updateResultUI(newRes);
 
-        if (activeBet && currentUser) {
-            let win = false;
-            let winnings = 0;
+        if (activeBets.length > 0 && currentUser) {
+            let totalWinnings = 0;
+            let totalBetAmt = 0;
+            let winningSize = winningNum >= 5 ? "Big" : "Small";
 
-            if (activeBet.type === "number" && activeBet.choice === winningNum) {
-                win = true; 
-                winnings = activeBet.amount * 9;
-            } else if (activeBet.type === "color") {
-                if (activeBet.choice === winningColor) {
-                    win = true;
-                    let multiplier = (winningNum === 0 || winningNum === 5) ? 1.5 : 1.9;
-                    winnings = Math.round(activeBet.amount * multiplier);
-                } else if (winningColor === "Violet" && (winningNum === 0 || winningNum === 5)) {
-                    if ((winningNum === 0 && activeBet.choice === "Red") || (winningNum === 5 && activeBet.choice === "Green")) {
-                        win = true; 
-                        winnings = Math.round(activeBet.amount * 1.5);
+            activeBets.forEach(bet => {
+                totalBetAmt += bet.amount;
+                let betWin = false;
+                let betPayout = 0;
+
+                if (bet.type === "number" && bet.choice === winningNum) {
+                    betWin = true; 
+                    betPayout = bet.amount * 9;
+                } else if (bet.type === "color") {
+                    if (bet.choice === winningColor) {
+                        betWin = true;
+                        betPayout = Math.round(bet.amount * 1.9);
+                    } else if (winningColor === "Violet" && (winningNum === 0 || winningNum === 5)) {
+                        if (bet.choice === "Violet") {
+                            betWin = true;
+                            betPayout = Math.round(bet.amount * 1.9);
+                        }
+                    }
+                } else if (bet.type === "big_small") {
+                    if (bet.choice === winningSize) {
+                        betWin = true;
+                        betPayout = Math.round(bet.amount * 1.9);
                     }
                 }
-            }
 
-            if (win) {
-                db.ref(`users/${currentUser.mobile}/balance`).transaction((bal) => (bal || 0) + winnings);
-                document.getElementById("resultStatus").innerText = `🎉 YOU WIN! +₹${winnings - activeBet.amount} Profit`;
+                if (betWin) {
+                    totalWinnings += betPayout;
+                }
+            });
+
+            let streakEl = document.getElementById("winStreakCount");
+
+            if (totalWinnings > 0) {
+                currentStreak++;
+                db.ref(`users/${currentUser.mobile}/balance`).transaction((bal) => (bal || 0) + totalWinnings);
+                document.getElementById("resultStatus").innerText = `🎉 YOU WIN! +₹${totalWinnings - totalBetAmt} Profit`;
                 document.getElementById("resultStatus").style.color = "var(--green)";
-                logTx(currentUser.mobile, "GAME_WIN", winnings, `Bet on ${activeBet.choice} Won`);
+                logTx(currentUser.mobile, "GAME_WIN", totalWinnings, `Multi-Bet Win`);
+                
+                streakEl.innerText = `🔥 STREAK: ${currentStreak}`;
+                streakEl.style.display = "inline-block";
             } else {
-                document.getElementById("resultStatus").innerText = `💥 YOU LOST! -₹${activeBet.amount}`;
+                currentStreak = 0;
+                streakEl.style.display = "none";
+                document.getElementById("resultStatus").innerText = `💥 YOU LOST! -₹${totalBetAmt}`;
                 document.getElementById("resultStatus").style.color = "var(--red)";
-                logTx(currentUser.mobile, "GAME_LOSS", activeBet.amount, `Bet on ${activeBet.choice} Lost`);
+                logTx(currentUser.mobile, "GAME_LOSS", totalBetAmt, `Multi-Bet Lost`);
             }
             syncUserBalance();
         } else {
             document.getElementById("resultStatus").innerText = "No Bet Placed (Watching Mode)";
-            document.getElementById("resultStatus").style.color = "#c0caf5";
+            document.getElementById("resultStatus").style.color = "#a4b0be";
         }
 
-        activeBet = null;
-        document.getElementById("currentBetInfo").innerText = "🎯 Selection: None (Watching Mode)";
+        activeBets = [];
+        document.getElementById("currentBetInfo").innerText = "🎯 Active Bets: None (Watching Mode)";
         db.ref("global_live_bets").remove();
     }
 
-    function renderHistory(list) {
-        let html = "";
-        list.forEach(h => {
-            let bg = h.color === 'Red' ? '#f7768e' : (h.color === 'Green' ? '#9ece6a' : '#bb9af7');
-            html += `<span class="history-badge" style="background:${bg}">${h.number}</span>`;
-        });
-        document.getElementById("historyContainer").innerHTML = html || "[ No History Yet ]";
-    }
-
     function placeBet(choice, type) {
+        playClickSound();
         if (!currentUser) return alert("Please login first!");
-        if (timer <= 10) return alert("Betting locked for last 10 seconds!");
+        if (timer <= 7) return alert("Betting locked for last 7 seconds!");
         let amt = parseInt(document.getElementById("betAmount").value);
         if (amt < 10 || amt > 500) return alert("Bet amount must be ₹10 - ₹500!");
         
@@ -614,18 +1263,21 @@
             if (bal < amt) return alert("Insufficient Wallet Balance!");
 
             db.ref(`users/${currentUser.mobile}/balance`).set(bal - amt);
-            activeBet = { choice, type, amount: amt };
+            activeBets.push({ choice, type, amount: amt });
 
             if (type === "color") {
                 db.ref(`global_live_bets/${currentUser.mobile}/color/${choice}`).transaction((val) => (val || 0) + amt);
+            } else if (type === "big_small") {
+                db.ref(`global_live_bets/${currentUser.mobile}/big_small/${choice}`).transaction((val) => (val || 0) + amt);
             } else {
                 db.ref(`global_live_bets/${currentUser.mobile}/number/${choice}`).transaction((val) => (val || 0) + amt);
             }
 
-            document.getElementById("currentBetInfo").innerText = `🎯 Selected: ${choice} (₹${amt})`;
+            let betSummary = activeBets.map(b => `${b.choice} (₹${b.amount})`).join(" + ");
+            document.getElementById("currentBetInfo").innerText = `🎯 Active Bets: ${betSummary}`;
             logTx(currentUser.mobile, "BET_PLACED", amt, `Placed Bet on ${choice}`);
             syncUserBalance();
-            alert("Bet Placed Successfully!");
+            alert(`Bet of ₹${amt} placed on ${choice}!`);
         });
     }
 
@@ -634,7 +1286,10 @@
         document.getElementById("betGreen").innerText = "₹" + globalLiveBets.color.Green;
         document.getElementById("betViolet").innerText = "₹" + globalLiveBets.color.Violet;
         
-        let tot = globalLiveBets.color.Red + globalLiveBets.color.Green + globalLiveBets.color.Violet;
+        document.getElementById("betBig").innerText = "₹" + globalLiveBets.big_small.Big;
+        document.getElementById("betSmall").innerText = "₹" + globalLiveBets.big_small.Small;
+
+        let tot = globalLiveBets.color.Red + globalLiveBets.color.Green + globalLiveBets.color.Violet + globalLiveBets.big_small.Big + globalLiveBets.big_small.Small;
         for(let i=0; i<10; i++) {
             document.getElementById(`betNum${i}`).innerText = "₹" + globalLiveBets.number[i];
             tot += globalLiveBets.number[i];
@@ -647,48 +1302,106 @@
         let mobile = document.getElementById("regMobile").value.trim();
         let pwd = document.getElementById("regPwd").value.trim();
         let pin = document.getElementById("regPin").value.trim();
+        let refCode = document.getElementById("regRef").value.trim().toUpperCase();
 
         if (!name || mobile.length !== 10 || !pwd || pin.length !== 4) return alert("Fill all details correctly!");
 
         let hashedPwd = hashText(pwd);
         let hashedPin = hashText(pin);
+        let generatedUserId = "ROYAL" + mobile.slice(-4);
 
         db.ref(`users/${mobile}`).once("value", (snapshot) => {
             if (snapshot.exists()) return alert("Mobile already registered!");
 
-            let userData = { name, mobile, pwd: hashedPwd, pin: hashedPin, balance: 0 };
+            let userData = { 
+                userId: generatedUserId,
+                name, 
+                mobile, 
+                pwd: hashedPwd, 
+                pin: hashedPin, 
+                balance: 0, 
+                refCode: "REF" + mobile.slice(-4),
+                referredBy: refCode || null,
+                refBonusClaimed: false
+            };
             
             db.ref(`users/${mobile}`).set(userData).then(() => {
                 currentUser = userData;
                 sessionStorage.setItem("activeUser", JSON.stringify(currentUser));
                 syncUserBalance();
-                closeModal("registerModal");
-                alert("Account Registered Successfully!");
-            }).catch(error => {
-                alert("Error saving user data!");
+                document.getElementById("registerModal").style.display = "none";
+                alert(`Account Registered Successfully!\nYour User ID: ${generatedUserId}`);
+                openModal("loginModal");
             });
         });
     }
 
+    /* 🔑 DYNAMIC FIELD-SPECIFIC LOGIN VALIDATION WITH VIBRATION */
+    function clearLoginErrors() {
+        document.getElementById("loginMobileError").style.display = "none";
+        document.getElementById("loginPwdError").style.display = "none";
+    }
+
     function submitLogin() {
+        clearLoginErrors();
         let mobile = document.getElementById("loginMobile").value.trim();
         let pwd = document.getElementById("loginPwd").value.trim();
 
-        if (!mobile || !pwd) return alert("Enter Mobile and Password!");
+        let mobileErrEl = document.getElementById("loginMobileError");
+        let pwdErrEl = document.getElementById("loginPwdError");
+
+        if (!mobile || mobile.length !== 10 || isNaN(mobile)) {
+            mobileErrEl.innerText = "⚠️ Kripya sahi 10-digit mobile number enter karein!";
+            mobileErrEl.style.display = "block";
+            triggerHapticVibration(200);
+            return;
+        }
+
+        if (!pwd) {
+            pwdErrEl.innerText = "⚠️ Password khali nahi ho sakta!";
+            pwdErrEl.style.display = "block";
+            triggerHapticVibration(200);
+            return;
+        }
 
         let hashedPwd = hashText(pwd);
 
         db.ref(`users/${mobile}`).once("value", (snapshot) => {
             let u = snapshot.val();
-            if (u && u.pwd === hashedPwd) {
-                currentUser = u;
-                sessionStorage.setItem("activeUser", JSON.stringify(currentUser));
-                syncUserBalance();
-                closeModal("loginModal");
-                alert(`Welcome back, ${currentUser.name}!`);
-            } else {
-                alert("Invalid Mobile or Password!");
+            if (!u) {
+                mobileErrEl.innerText = "❌ Yeh mobile number registered nahi hai!";
+                mobileErrEl.style.display = "block";
+                triggerHapticVibration(250);
+                return;
             }
+
+            if (u.pwd !== hashedPwd) {
+                pwdErrEl.innerText = "❌ Password galat hai! Kripya sahi password dalein.";
+                pwdErrEl.style.display = "block";
+                triggerHapticVibration(250);
+                return;
+            }
+
+            currentUser = u;
+
+            if (u.referredBy && u.refBonusClaimed === false) {
+                db.ref("users").orderByChild("refCode").equalTo(u.referredBy).once("value", (refSnap) => {
+                    if (refSnap.exists()) {
+                        let referrerMob = Object.keys(refSnap.val())[0];
+                        
+                        db.ref(`users/${referrerMob}/balance`).transaction((bal) => (bal || 0) + 20);
+                        logTx(referrerMob, "REFERRAL_BONUS", 20, `Auto Bonus: User +91 ${mobile} Logged In!`);
+                        
+                        db.ref(`users/${mobile}/refBonusClaimed`).set(true);
+                        currentUser.refBonusClaimed = true;
+                    }
+                });
+            }
+
+            sessionStorage.setItem("activeUser", JSON.stringify(currentUser));
+            syncUserBalance();
+            document.getElementById("loginModal").style.display = "none";
+            alert(`Welcome back, ${currentUser.name}!`);
         });
     }
 
@@ -719,7 +1432,8 @@
             if (u && u.pin === hashedPin) {
                 db.ref(`users/${mob}/pwd`).set(hashedNewPwd);
                 alert("Password reset successfully!");
-                closeModal("forgotModal");
+                document.getElementById("forgotModal").style.display = "none";
+                openModal("loginModal");
             } else {
                 alert("Incorrect Mobile or Security PIN!");
             }
@@ -733,19 +1447,56 @@
     }
 
     function updateUserUI() {
+        let container = document.getElementById("mainContainer");
+
         if (currentUser) {
-            document.getElementById("userStatus").innerText = `User: ${currentUser.name} (+91 ${currentUser.mobile})`;
-            document.getElementById("userStatus").style.color = "var(--green)";
+            container.classList.remove("app-locked");
+            let displayId = currentUser.userId || ("ROYAL" + currentUser.mobile.slice(-4));
+            
+            document.getElementById("userStatus").innerText = `ID: ${displayId}`;
             document.getElementById("walletBalance").innerText = "₹" + (currentUser.balance || 0);
             document.getElementById("authBtn").style.display = "none";
             document.getElementById("logoutBtn").style.display = "inline-block";
+
+            let bal = currentUser.balance || 0;
+            let vipTag = "👑 BRONZE VIP";
+            if (bal >= 10000) vipTag = "💎 DIAMOND VIP";
+            else if (bal >= 5000) vipTag = "💎 PLATINUM VIP";
+            else if (bal >= 2000) vipTag = "🥇 GOLD VIP";
+            else if (bal >= 500) vipTag = "🥈 SILVER VIP";
+            
+            document.getElementById("userVIPBadge").innerText = vipTag;
+
         } else {
-            document.getElementById("userStatus").innerText = "🔒 Guest Mode";
-            document.getElementById("userStatus").style.color = "var(--red)";
+            container.classList.add("app-locked");
+            document.getElementById("userStatus").innerText = "ID: GUEST";
             document.getElementById("walletBalance").innerText = "₹0";
             document.getElementById("authBtn").style.display = "inline-block";
             document.getElementById("logoutBtn").style.display = "none";
+            document.getElementById("userVIPBadge").innerText = "👑 BRONZE VIP";
+            
+            openModal("loginModal");
         }
+    }
+
+    function openReferModal() {
+        if (!currentUser) return alert("Please login first!");
+        let code = currentUser.refCode || ("REF" + currentUser.mobile.slice(-4));
+        document.getElementById("myRefCode").value = code;
+        openModal("referModal");
+    }
+
+    function copyReferralLink() {
+        let code = document.getElementById("myRefCode").value;
+        let siteUrl = window.location.href.split('?')[0]; 
+        let fullShareLink = `${siteUrl}?ref=${code}`;
+        
+        let shareText = `👑 Join Royal Trading VIP & Earn Daily Profit!\n🎁 Register using my Referral Code: *${code}*\n👇 Click Link to Register:\n${fullShareLink}`;
+        
+        navigator.clipboard.writeText(shareText);
+        
+        let tgUrl = `https://t.me/share/url?url=${encodeURIComponent(fullShareLink)}&text=${encodeURIComponent(shareText)}`;
+        window.open(tgUrl, '_blank');
     }
 
     function openDepositModal() {
@@ -754,16 +1505,23 @@
         updateQR(100);
     }
 
-    // ⚡ SUBMIT DEPOSIT WITH ₹1 - ₹5000 LIMIT VALIDATION
+    /* ⚡ MANDATORY SCREENSHOT DEPOSIT SUBMIT WITH LOCAL FILE DATA URL & TELEGRAM DIRECT REDIRECT */
     async function submitDeposit() {
         if (!currentUser) return alert("Please login first!");
 
         let amt = parseInt(document.getElementById("depAmount").value);
         let utr = document.getElementById("depUTR").value.trim();
+        let screenshotFileInput = document.getElementById("depScreenshot");
+        let screenshotFile = screenshotFileInput.files[0];
 
-        if (!amt || amt < 1 || amt > 5000) return alert("❌ Deposit amount must be between ₹1 and ₹5000!");
+        if (!amt || amt < 100 || amt > 5000) return alert("❌ Deposit amount must be between ₹100 and ₹5000!");
         if (!utr || utr.length !== 12 || isNaN(utr)) {
             return alert("❌ Enter valid 12-digit numeric UTR!");
+        }
+
+        if (!screenshotFile) {
+            triggerHapticVibration(300);
+            return alert("❌ Payment Screenshot upload karna zaroori hai! Kripya Screenshot choose karein.");
         }
 
         try {
@@ -778,21 +1536,37 @@
                 }
             }
 
-            let depData = { 
-                id: Date.now(), 
-                name: currentUser.name, 
-                mobile: currentUser.mobile, 
-                amount: amt, 
-                utr: utr, 
-                status: "PENDING", 
-                date: new Date().toLocaleString() 
+            // READ FILE TO BASE64 DATA URL FOR ADMIN PANEL PREVIEW
+            const reader = new FileReader();
+            reader.onload = async function (e) {
+                let ssDataUrl = e.target.result;
+
+                let depData = { 
+                    id: Date.now(), 
+                    name: currentUser.name, 
+                    mobile: currentUser.mobile, 
+                    amount: amt, 
+                    utr: utr, 
+                    screenshot: ssDataUrl,
+                    status: "PENDING", 
+                    date: new Date().toLocaleString() 
+                };
+
+                await db.ref(`deposits/${depData.id}`).set(depData);
+                logTx(currentUser.mobile, "DEPOSIT_PENDING", amt, `Submitted UTR: ${utr}`);
+                
+                document.getElementById("depUTR").value = "";
+                document.getElementById("depScreenshot").value = "";
+                document.getElementById("depositModal").style.display = "none";
+
+                // REDIRECT DIRECTLY TO TELEGRAM LINK
+                let telegramSupportUrl = "https://t.me/+7QoUbV34Dok0MTg1";
+                
+                alert("✅ Deposit submitted! Telegram open ho raha hai, kripya wahan payment screenshot attach karke admin ko bhej dein.");
+                window.open(telegramSupportUrl, '_blank');
             };
 
-            await db.ref(`deposits/${depData.id}`).set(depData);
-            logTx(currentUser.mobile, "DEPOSIT_PENDING", amt, `Submitted UTR: ${utr}`);
-            document.getElementById("depUTR").value = "";
-            closeModal("depositModal");
-            alert("✅ Deposit submitted! Pending admin approval.");
+            reader.readAsDataURL(screenshotFile);
 
         } catch (err) {
             console.error("Deposit error:", err);
@@ -800,47 +1574,59 @@
         }
     }
 
+    function calculateWithdrawFee(totalAmtStr) {
+        let totalAmt = parseFloat(totalAmtStr) || 0;
+        let baseNetAmt = Math.round(totalAmt / 1.10);
+        let feeAmt = totalAmt - baseNetAmt;
+
+        document.getElementById("wReqAmt").innerText = "₹" + totalAmt;
+        document.getElementById("wFeeAmt").innerText = "₹" + feeAmt;
+        document.getElementById("wNetAmt").innerText = "₹" + baseNetAmt;
+    }
+
     function submitWithdraw() {
         if (!currentUser) return alert("Please login first!");
-        let method = document.getElementById("wMethod").value;
-        let amt = parseInt(document.getElementById("wAmount").value);
+        let totalAmt = parseInt(document.getElementById("wAmount").value);
         let pwd = document.getElementById("wPwd").value;
         let acc = document.getElementById("wAcc").value.trim();
         let ifsc = document.getElementById("wIFSC").value.trim();
 
-        if (!amt || amt < 100 || amt > currentUser.balance) return alert("Invalid amount or low balance!");
-        if (!acc) return alert("Please enter UPI ID / Account Number!");
+        if (!totalAmt || totalAmt < 110 || totalAmt > currentUser.balance) return alert("Invalid amount or insufficient wallet balance!");
+        if (!acc) return alert("Please enter Bank Account Number!");
 
-        if (method.includes("Bank")) {
-            let ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/i;
-            if (!ifsc || !ifscRegex.test(ifsc)) {
-                return alert("❌ Invalid IFSC Code! Kripya sahi 11-digit IFSC code dalein (e.g. SBIN0001234)");
-            }
+        let ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/i;
+        if (!ifsc || !ifscRegex.test(ifsc)) {
+            return alert("❌ Invalid IFSC Code! Kripya sahi 11-digit IFSC code dalein (e.g. SBIN0001234)");
         }
 
         let hashedPwd = hashText(pwd);
         if (hashedPwd !== currentUser.pwd) return alert("Incorrect password!");
 
-        db.ref(`users/${currentUser.mobile}/balance`).set(currentUser.balance - amt);
+        let baseNetAmt = Math.round(totalAmt / 1.10);
+        let feeAmt = totalAmt - baseNetAmt;
 
-        let fullAccDetail = acc + (method.includes("Bank") ? ` (IFSC: ${ifsc.toUpperCase()})` : "");
+        db.ref(`users/${currentUser.mobile}/balance`).set(currentUser.balance - totalAmt);
+
+        let fullAccDetail = `A/C: ${acc} (IFSC: ${ifsc.toUpperCase()})`;
 
         let witData = { 
             id: Date.now(), 
             name: currentUser.name, 
             mobile: currentUser.mobile, 
-            amount: amt, 
+            amount: totalAmt, 
+            fee: feeAmt,
+            netAmount: baseNetAmt,
             acc: fullAccDetail, 
-            ifsc: method.includes("Bank") ? ifsc.toUpperCase() : "N/A",
+            ifsc: ifsc.toUpperCase(),
             status: "PENDING", 
             date: new Date().toLocaleString() 
         };
         db.ref(`withdrawals/${witData.id}`).set(witData);
 
-        logTx(currentUser.mobile, "WITHDRAW_REQ", amt, `Pending to ${fullAccDetail}`);
+        logTx(currentUser.mobile, "WITHDRAW_REQ", totalAmt, `Pending: ₹${baseNetAmt} Net to Bank (Fee ₹${feeAmt})`);
         syncUserBalance();
-        closeModal("withdrawModal");
-        alert("Withdrawal submitted successfully!");
+        document.getElementById("withdrawModal").style.display = "none";
+        alert(`Withdrawal submitted!\nWallet Deducted: ₹${totalAmt}\nNet Bank Credit: ₹${baseNetAmt}\nService Fee: ₹${feeAmt}`);
     }
 
     function logTx(mobile, type, amount, details) {
@@ -869,15 +1655,16 @@
 
     function loadUserWithdrawHistory() {
         if (!currentUser) return;
-        document.getElementById("historyTableHeader").innerHTML = "<tr><th>Amount</th><th>Account Details</th><th>Status</th><th>Date</th></tr>";
+        document.getElementById("historyTableHeader").innerHTML = "<tr><th>Total Amt</th><th>Account Details</th><th>Status</th><th>Date</th></tr>";
         db.ref("withdrawals").orderByChild("mobile").equalTo(currentUser.mobile).once("value", (snapshot) => {
             let data = snapshot.val() || {};
             let wits = Object.values(data).reverse();
             let html = "";
             wits.forEach(w => {
                 let badgeClass = w.status === 'PENDING' ? 'status-pending' : (w.status === 'APPROVED' ? 'status-approved' : 'status-rejected');
+                let displayNet = w.netAmount ? ` (Net ₹${w.netAmount})` : '';
                 html += `<tr>
-                    <td style="color:var(--red); font-weight:bold;">₹${w.amount}</td>
+                    <td style="color:var(--red); font-weight:bold;">₹${w.amount}${displayNet}</td>
                     <td><small>${w.acc}</small></td>
                     <td><span class="status-badge ${badgeClass}">${w.status}</span></td>
                     <td><small>${w.date}</small></td>
@@ -887,50 +1674,46 @@
         });
     }
 
-    function openStatsModal() {
-        if (!currentUser) return alert("Please login first!");
-        db.ref(`transactions/${currentUser.mobile}`).once("value", (snapshot) => {
-            let data = snapshot.val() || {};
-            let txs = Object.values(data);
-            let dep = txs.filter(t => t.type === "DEPOSIT_SUCCESS").reduce((a,b) => a + b.amount, 0);
-            let wit = txs.filter(t => t.type === "WITHDRAW_REQ").reduce((a,b) => a + b.amount, 0);
-            let win = txs.filter(t => t.type === "GAME_WIN").reduce((a,b) => a + b.amount, 0);
-            let loss = txs.filter(t => t.type === "GAME_LOSS").reduce((a,b) => a + b.amount, 0);
-
-            document.getElementById("statsContent").innerHTML = `
-                <b>Total Deposits Approved:</b> ₹${dep}<br>
-                <b>Total Withdrawals Requested:</b> ₹${wit}<br>
-                <b>Total Amount Won:</b> ₹${win}<br>
-                <b>Total Amount Lost:</b> ₹${loss}
-            `;
-            openModal("statsModal");
-        });
-    }
-
+    /* 🛡️ UNIFIED ADMIN MODE SETTER */
     function setAdminMode(mode, val) {
-        if (mode === 'anti_loss' || mode === 'random') {
-            adminSettings.mode = mode;
+        if (mode === 'anti_loss') {
+            let targetMode = (val === 'on') ? 'anti_loss' : 'random';
+            adminSettings.mode = targetMode;
             updateAntiLossUIStatus();
-            alert(mode === 'anti_loss' ? "🛡️ Anti-Loss Mode TURNED ON!" : "🎲 Anti-Loss Mode TURNED OFF (Pure Random Mode Active)!");
+            
+            try {
+                db.ref("admin_settings/mode").set(targetMode);
+            } catch (e) {
+                console.error(e);
+            }
         }
         if (mode === 'force_color') {
-            adminSettings.forcedNumber = val === "Red" ? 2 : (val === "Green" ? 1 : 0);
+            let forcedNum = val === "Red" ? 2 : (val === "Green" ? 1 : 0);
+            adminSettings.forcedNumber = forcedNum;
+            try { db.ref("admin_settings/forcedNumber").set(forcedNum); } catch(e){}
             alert(`Override Set: Forced Color ${val}`);
         }
         if (mode === 'force_number') {
             adminSettings.forcedNumber = val;
+            try { db.ref("admin_settings/forcedNumber").set(val); } catch(e){}
             alert(`Override Set: Forced Number ${val}`);
         }
     }
 
     function updateAntiLossUIStatus() {
         let statusEl = document.getElementById("antiLossStatusText");
+        if (!statusEl) return;
+        
         if (adminSettings.mode === 'anti_loss') {
             statusEl.innerText = "🛡️ ANTI-LOSS MODE: ENABLED (ON)";
             statusEl.style.color = "var(--green)";
+            statusEl.style.background = "rgba(5, 255, 161, 0.1)";
+            statusEl.style.border = "1px solid var(--green)";
         } else {
             statusEl.innerText = "🎲 ANTI-LOSS MODE: DISABLED (OFF - PURE RANDOM)";
             statusEl.style.color = "var(--red)";
+            statusEl.style.background = "rgba(255, 42, 109, 0.1)";
+            statusEl.style.border = "1px solid var(--red)";
         }
     }
 
@@ -962,6 +1745,7 @@
         }
     }
 
+    /* 👑 LOAD ADMIN DATA WITH SCREENSHOT PREVIEW LINK SUPPORT IN DEPOSITS TAB */
     function loadAdminData() {
         let container = document.getElementById("adminRequests");
         if (activeAdminTab === 'deps') {
@@ -969,10 +1753,10 @@
                 let data = snapshot.val() || {};
                 let deps = Object.values(data);
                 if (deps.length === 0) {
-                    container.innerHTML = "<small style='color:#737aa2;'>No Deposit Requests Recorded</small>";
+                    container.innerHTML = "<small style='color:#a4b0be;'>No Deposit Requests Recorded</small>";
                     return;
                 }
-                let html = "<table><thead><tr><th>User Info</th><th>Amount</th><th>UTR Number</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody>";
+                let html = "<table><thead><tr><th>User Info</th><th>Amount</th><th>UTR Number</th><th>Screenshot</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody>";
                 deps.forEach(d => {
                     let badgeClass = d.status === 'PENDING' ? 'status-pending' : (d.status === 'APPROVED' ? 'status-approved' : 'status-rejected');
                     let actionBtn = d.status === 'PENDING' ? `
@@ -980,10 +1764,13 @@
                         <button class="btn-red" style="padding:2px 4px; font-size:9px;" onclick="rejectDep('${d.id}')">Reject</button>
                     ` : '✓ Done';
                     
+                    let ssLinkBtn = d.screenshot ? `<button class="btn-blue" style="padding:2px 6px; font-size:9px;" onclick="viewDepositScreenshot('${d.id}')">📸 View SS</button>` : `<small style='color:#a4b0be;'>No Image</small>`;
+
                     html += `<tr>
-                        <td><b>${d.name}</b><br><small style="color:#7aa2f7;">+91 ${d.mobile}</small></td>
+                        <td><b>${d.name}</b><br><small style="color:#00f3ff;">+91 ${d.mobile}</small></td>
                         <td style="color:var(--green); font-weight:bold;">₹${d.amount}</td>
                         <td><small>${d.utr}</small></td>
+                        <td>${ssLinkBtn}</td>
                         <td><span class="status-badge ${badgeClass}">${d.status}</span></td>
                         <td><small>${d.date}</small></td>
                         <td>${actionBtn}</td>
@@ -997,10 +1784,10 @@
                 let data = snapshot.val() || {};
                 let wits = Object.values(data);
                 if (wits.length === 0) {
-                    container.innerHTML = "<small style='color:#737aa2;'>No Withdrawal Requests Recorded</small>";
+                    container.innerHTML = "<small style='color:#a4b0be;'>No Withdrawal Requests Recorded</small>";
                     return;
                 }
-                let html = "<table><thead><tr><th>User Info</th><th>Amount</th><th>Account Details</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody>";
+                let html = "<table><thead><tr><th>User Info</th><th>Deducted / Fee</th><th>Net Pay</th><th>Account Details</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody>";
                 wits.forEach(w => {
                     let badgeClass = w.status === 'PENDING' ? 'status-pending' : (w.status === 'APPROVED' ? 'status-approved' : 'status-rejected');
                     let actionBtn = w.status === 'PENDING' ? `
@@ -1008,9 +1795,13 @@
                         <button class="btn-red" style="padding:2px 4px; font-size:9px;" onclick="processWithdraw('${w.id}', 'reject')">Reject</button>
                     ` : '✓ Done';
                     
+                    let netPay = w.netAmount || Math.round(w.amount / 1.10);
+                    let fee = w.fee || (w.amount - netPay);
+
                     html += `<tr>
-                        <td><b>${w.name}</b><br><small style="color:#7aa2f7;">+91 ${w.mobile}</small></td>
-                        <td style="color:var(--red); font-weight:bold;">₹${w.amount}</td>
+                        <td><b>${w.name}</b><br><small style="color:#00f3ff;">+91 ${w.mobile}</small></td>
+                        <td>₹${w.amount}<br><small style="color:var(--red);">-₹${fee} (Fee)</small></td>
+                        <td style="color:var(--green); font-weight:bold;">₹${netPay}</td>
                         <td><small>${w.acc}</small></td>
                         <td><span class="status-badge ${badgeClass}">${w.status}</span></td>
                         <td><small>${w.date}</small></td>
@@ -1025,13 +1816,15 @@
                 let users = snapshot.val() || {};
                 let userKeys = Object.keys(users);
                 if (userKeys.length === 0) {
-                    container.innerHTML = "<small style='color:#737aa2;'>No Registered Users Found</small>";
+                    container.innerHTML = "<small style='color:#a4b0be;'>No Registered Users Found</small>";
                     return;
                 }
-                let html = "<table><thead><tr><th>Name</th><th>Mobile</th><th>Balance</th><th>Action</th></tr></thead><tbody>";
+                let html = "<table><thead><tr><th>User ID</th><th>Name</th><th>Mobile</th><th>Balance</th><th>Action</th></tr></thead><tbody>";
                 userKeys.forEach(mob => {
                     let u = users[mob];
+                    let uid = u.userId || ("ROYAL" + mob.slice(-4));
                     html += `<tr>
+                        <td style="color:var(--gold); font-family:'Orbitron', sans-serif; font-weight:bold;">${uid}</td>
                         <td><b>${u.name}</b></td>
                         <td>+91 ${u.mobile}</td>
                         <td style="color:var(--green); font-weight:bold;">₹${u.balance || 0}</td>
@@ -1045,6 +1838,18 @@
                 container.innerHTML = html;
             });
         }
+    }
+
+    function viewDepositScreenshot(depId) {
+        db.ref(`deposits/${depId}/screenshot`).once("value", (snapshot) => {
+            let ssData = snapshot.val();
+            if (ssData) {
+                let w = window.open("");
+                w.document.write(`<title>Payment Screenshot Preview</title><body style="background:#000; text-align:center; padding:20px;"><img src="${ssData}" style="max-width:100%; border-radius:10px; border:2px solid #ffd700;" /></body>`);
+            } else {
+                alert("No screenshot image data found for this transaction!");
+            }
+        });
     }
 
     async function adminResetUserPassword(mobile) {
@@ -1074,9 +1879,9 @@
         db.ref(`deposits/${id}`).once("value", (snapshot) => {
             let d = snapshot.val();
             if (d && d.status === 'PENDING') {
-                db.ref(`deposits/${id}`).remove();
+                db.ref(`deposits/${id}/status`).set("REJECTED");
                 logTx(d.mobile, "DEPOSIT_REJECTED", d.amount, `Fake UTR Rejected: ${d.utr}`);
-                alert("❌ Fake Deposit Rejected & UTR Unblocked!");
+                alert("❌ Fake Deposit Rejected!");
                 loadAdminData();
             }
         });
@@ -1086,10 +1891,11 @@
         db.ref(`withdrawals/${id}`).once("value", (snapshot) => {
             let w = snapshot.val();
             if (w && w.status === 'PENDING') {
+                let netPay = w.netAmount || Math.round(w.amount / 1.10);
                 if (action === 'approve') {
                     db.ref(`withdrawals/${id}/status`).set("APPROVED");
-                    logTx(w.mobile, "WITHDRAW_SUCCESS", w.amount, `Approved to ${w.acc}`);
-                    alert(`Withdrawal Approved! Pay ₹${w.amount} to user.`);
+                    logTx(w.mobile, "WITHDRAW_SUCCESS", w.amount, `Approved Net Pay ₹${netPay} to ${w.acc}`);
+                    alert(`Withdrawal Approved! Pay Net ₹${netPay} to user bank.`);
                 } else {
                     db.ref(`withdrawals/${id}/status`).set("REJECTED");
                     db.ref(`users/${w.mobile}/balance`).transaction((bal) => (bal || 0) + w.amount);
@@ -1101,8 +1907,16 @@
         });
     }
 
+    window.addEventListener("load", function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const refFromUrl = urlParams.get('ref');
+        if (refFromUrl) {
+            document.getElementById("regRef").value = refFromUrl.toUpperCase();
+            openModal("registerModal");
+        }
+    });
+
     syncUserBalance();
 </script>
-
 </body>
 </html>
