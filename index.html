@@ -1297,21 +1297,28 @@
         document.getElementById("betTotal").innerText = "💰 GRAND TOTAL BETS: ₹" + tot;
     }
 
+    /* 🛠️ UPDATED REGISTRATION FUNCTION WITH FLEXIBLE VALIDATION */
     function submitRegister() {
         let name = document.getElementById("regName").value.trim();
-        let mobile = document.getElementById("regMobile").value.trim();
+        let mobile = document.getElementById("regMobile").value.trim().replace(/\s+/g, '');
         let pwd = document.getElementById("regPwd").value.trim();
-        let pin = document.getElementById("regPin").value.trim();
+        let pin = document.getElementById("regPin").value.trim().replace(/\s+/g, '');
         let refCode = document.getElementById("regRef").value.trim().toUpperCase();
 
-        if (!name || mobile.length !== 10 || !pwd || pin.length !== 4) return alert("Fill all details correctly!");
+        if (mobile.startsWith("+91")) mobile = mobile.slice(3);
+        if (mobile.startsWith("0")) mobile = mobile.slice(1);
+
+        if (!name) return alert("Kripya apna Full Name bharein!");
+        if (mobile.length !== 10 || isNaN(mobile)) return alert("Kripya sahi 10-digit Mobile Number dalein (bina space aur bina +91 ke)!");
+        if (!pwd) return alert("Kripya Password banayein!");
+        if (pin.length !== 4 || isNaN(pin)) return alert("Kripya 4-digit ka Security PIN dalein (e.g. 1234)!");
 
         let hashedPwd = hashText(pwd);
         let hashedPin = hashText(pin);
         let generatedUserId = "ROYAL" + mobile.slice(-4);
 
         db.ref(`users/${mobile}`).once("value", (snapshot) => {
-            if (snapshot.exists()) return alert("Mobile already registered!");
+            if (snapshot.exists()) return alert("Yeh mobile number pehle se registered hai!");
 
             let userData = { 
                 userId: generatedUserId,
@@ -1330,7 +1337,7 @@
                 sessionStorage.setItem("activeUser", JSON.stringify(currentUser));
                 syncUserBalance();
                 document.getElementById("registerModal").style.display = "none";
-                alert(`Account Registered Successfully!\nYour User ID: ${generatedUserId}`);
+                alert(`Account Successfully Ban Gaya!\nAapka User ID: ${generatedUserId}`);
                 openModal("loginModal");
             });
         });
@@ -1344,8 +1351,11 @@
 
     function submitLogin() {
         clearLoginErrors();
-        let mobile = document.getElementById("loginMobile").value.trim();
+        let mobile = document.getElementById("loginMobile").value.trim().replace(/\s+/g, '');
         let pwd = document.getElementById("loginPwd").value.trim();
+
+        if (mobile.startsWith("+91")) mobile = mobile.slice(3);
+        if (mobile.startsWith("0")) mobile = mobile.slice(1);
 
         let mobileErrEl = document.getElementById("loginMobileError");
         let pwdErrEl = document.getElementById("loginPwdError");
@@ -1418,9 +1428,12 @@
     }
 
     function submitForgot() {
-        let mob = document.getElementById("fpMobile").value.trim();
-        let pin = document.getElementById("fpPin").value.trim();
+        let mob = document.getElementById("fpMobile").value.trim().replace(/\s+/g, '');
+        let pin = document.getElementById("fpPin").value.trim().replace(/\s+/g, '');
         let newPwd = document.getElementById("fpNewPwd").value.trim();
+
+        if (mob.startsWith("+91")) mob = mob.slice(3);
+        if (mob.startsWith("0")) mob = mob.slice(1);
 
         if (!mob || !pin || !newPwd) return alert("Fill all details!");
 
