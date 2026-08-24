@@ -368,7 +368,6 @@
             <button class="btn-gold" onclick="playClickSound(); openHistoryModal();">📜 History</button>
             <button class="btn-blue" onclick="playClickSound(); openReferModal();">🎁 Refer & Earn</button>
         </div>
-        <!-- ✈️ TELEGRAM LINK UPDATED TO NAYA GROUP LINK -->
         <button style="width:100%; margin-top:10px; background:#0088cc; color:#fff; box-shadow: 0 0 15px rgba(0,136,204,0.4);" onclick="window.open('https://t.me/TirangaTraddingGroup99')">💬 24x7 Live Online Support (Telegram)</button>
     </div>
 
@@ -528,7 +527,7 @@
     </div>
 </div>
 
-<!-- 🔑 USER LOGIN MODAL WITH WARNING MESSAGES -->
+<!-- 🔑 USER LOGIN MODAL -->
 <div class="modal" id="loginModal">
     <div class="modal-content text-center">
         <h3 style="color: var(--gold);">USER LOGIN</h3>
@@ -551,15 +550,28 @@
     </div>
 </div>
 
+<!-- 📲 UPDATED USER REGISTRATION MODAL WITH FAST2SMS OTP -->
 <div class="modal" id="registerModal">
     <div class="modal-content text-center">
         <h3 style="color: var(--gold);">NEW USER REGISTRATION</h3>
-        <div class="form-group"><input type="text" id="regName" placeholder="Full Name"></div>
-        <div class="form-group"><input type="text" id="regMobile" placeholder="10-Digit Mobile Number"></div>
-        <div class="form-group"><input type="password" id="regPwd" placeholder="Create Password"></div>
-        <div class="form-group"><input type="password" id="regPin" placeholder="Create 4-Digit Security PIN"></div>
-        <div class="form-group"><input type="text" id="regRef" placeholder="Referral Code (Optional)"></div>
-        <button class="btn-blue" style="width:100%;" onclick="submitRegister()">Create Account</button>
+        
+        <div id="regFormSection">
+            <div class="form-group"><input type="text" id="regName" placeholder="Full Name"></div>
+            <div class="form-group"><input type="text" id="regMobile" placeholder="10-Digit Mobile Number"></div>
+            <div class="form-group"><input type="password" id="regPwd" placeholder="Create Password"></div>
+            <div class="form-group"><input type="password" id="regPin" placeholder="Create 4-Digit Security PIN"></div>
+            <div class="form-group"><input type="text" id="regRef" placeholder="Referral Code (Optional)"></div>
+            <button class="btn-blue" style="width:100%;" onclick="sendRegisterOTP()">📩 Send OTP via SMS</button>
+        </div>
+
+        <div id="otpFormSection" style="display:none; margin-top:10px;">
+            <p style="color:var(--green); font-size:12px;">📲 Enter 4-Digit OTP sent to your Mobile:</p>
+            <div class="form-group">
+                <input type="text" id="regOTPInput" placeholder="Enter 4-Digit OTP" style="text-align:center; font-size:18px; letter-spacing:4px;">
+            </div>
+            <button class="btn-green" style="width:100%;" onclick="submitRegisterWithOTP()">Verify OTP & Create Account</button>
+        </div>
+
         <button class="btn-dark" style="width:100%; margin-top:8px;" onclick="openModal('loginModal'); closeModal('registerModal');">Back to Login</button>
     </div>
 </div>
@@ -575,7 +587,7 @@
     </div>
 </div>
 
-<!-- ⚡ DEPOSIT MODAL WITH MANDATORY SCREENSHOT FILE UPLOAD & AUTOMATIC TELEGRAM DIRECT REDIRECT -->
+<!-- ⚡ DEPOSIT MODAL -->
 <div class="modal" id="depositModal">
     <div class="modal-content text-center" style="background:#fff; color:#111;">
         <h2 style="color:#5f259f; margin:0; font-family:'Orbitron', sans-serif;">PhonePe</h2>
@@ -599,7 +611,6 @@
             <input type="text" id="depUTR" placeholder="Enter 12-Digit UTR Number" style="color:#000; border:1px solid #ccc; background:#fff;">
         </div>
         
-        <!-- MANDATORY SCREENSHOT FILE ATTACHMENT FIELD -->
         <div class="form-group">
             <label style="color:#5f259f; font-size:11px; font-weight:bold; display:block; margin-bottom:4px; text-align:left;">📸 Payment Screenshot (Required):</label>
             <input type="file" id="depScreenshot" accept="image/*" style="color:#000; border:1px solid #ccc; background:#fff; padding:6px;">
@@ -660,7 +671,7 @@
     </div>
 </div>
 
-<!-- 👑 ADMIN CONTROL PANEL WITH SCREENSHOT VIEW LINK SUPPORT IN DEPOSITS TAB -->
+<!-- 👑 ADMIN CONTROL PANEL -->
 <div class="modal" id="adminModal">
     <div class="modal-content">
         <h3 style="color: var(--gold);" class="text-center">ADMIN CONTROL PANEL</h3>
@@ -696,7 +707,6 @@
         </div>
         <div style="text-align: center; font-weight: bold; color: var(--gold); margin-bottom: 10px;" id="betTotal">💰 GRAND TOTAL BETS: ₹0</div>
 
-        <!-- ON / OFF BUTTONS -->
         <div class="grid-2">
             <button class="btn-green" onclick="setAdminMode('anti_loss', 'on')">🟢 TURN ANTI-LOSS (ON)</button>
             <button class="btn-gold" onclick="setAdminMode('anti_loss', 'off')">🔴 TURN ANTI-LOSS (OFF)</button>
@@ -771,7 +781,6 @@
         }
     }
 
-    /* 📳 VIBRATION HELPER FUNCTION FOR WARNINGS */
     function triggerHapticVibration(duration = 200) {
         if (navigator.vibrate) {
             navigator.vibrate(duration);
@@ -816,11 +825,14 @@
     let currentRoundId = 0;
     let processedRounds = {};
     let currentRotation = 0;
+    
+    // OTP System Temporary Variables
+    let tempRegistrationData = null;
+    let generatedOTP = null;
 
     let globalLiveBets = { color: { Red: 0, Green: 0, Violet: 0 }, big_small: { Big: 0, Small: 0 }, number: {} };
     for(let i=0; i<10; i++) globalLiveBets.number[i] = 0;
 
-    // 🔥 REALTIME FIREBASE LISTEN FOR ADMIN SETTINGS
     db.ref("admin_settings").on("value", (snapshot) => {
         let settings = snapshot.val();
         if (settings) {
@@ -1297,8 +1309,8 @@
         document.getElementById("betTotal").innerText = "💰 GRAND TOTAL BETS: ₹" + tot;
     }
 
-    /* 🛠️ UPDATED REGISTRATION FUNCTION WITH FLEXIBLE VALIDATION */
-    function submitRegister() {
+    // 📩 1. FAST2SMS SE REAL OTP BHEJNE KA FUNCTION
+    function sendRegisterOTP() {
         let name = document.getElementById("regName").value.trim();
         let mobile = document.getElementById("regMobile").value.trim().replace(/\s+/g, '');
         let pwd = document.getElementById("regPwd").value.trim();
@@ -1309,41 +1321,77 @@
         if (mobile.startsWith("0")) mobile = mobile.slice(1);
 
         if (!name) return alert("Kripya apna Full Name bharein!");
-        if (mobile.length !== 10 || isNaN(mobile)) return alert("Kripya sahi 10-digit Mobile Number dalein (bina space aur bina +91 ke)!");
+        if (mobile.length !== 10 || isNaN(mobile)) return alert("Kripya 10-digit ka Mobile Number dalein!");
         if (!pwd) return alert("Kripya Password banayein!");
-        if (pin.length !== 4 || isNaN(pin)) return alert("Kripya 4-digit ka Security PIN dalein (e.g. 1234)!");
-
-        let hashedPwd = hashText(pwd);
-        let hashedPin = hashText(pin);
-        let generatedUserId = "ROYAL" + mobile.slice(-4);
+        if (pin.length !== 4 || isNaN(pin)) return alert("Kripya 4-digit Security PIN dalein!");
 
         db.ref(`users/${mobile}`).once("value", (snapshot) => {
-            if (snapshot.exists()) return alert("Yeh mobile number pehle se registered hai!");
+            if (snapshot.exists()) return alert("Yeh Mobile Number pehle se registered hai!");
 
-            let userData = { 
-                userId: generatedUserId,
-                name, 
-                mobile, 
-                pwd: hashedPwd, 
-                pin: hashedPin, 
+            // 4-Digit OTP generate karein
+            generatedOTP = Math.floor(1000 + Math.random() * 9000).toString();
+
+            tempRegistrationData = {
+                userId: "ROYAL" + mobile.slice(-4),
+                name, mobile, 
+                pwd: hashText(pwd), 
+                pin: hashText(pin),
                 balance: 0, 
                 refCode: "REF" + mobile.slice(-4),
-                referredBy: refCode || null,
+                referredBy: refCode || null, 
                 refBonusClaimed: false
             };
-            
-            db.ref(`users/${mobile}`).set(userData).then(() => {
-                currentUser = userData;
-                sessionStorage.setItem("activeUser", JSON.stringify(currentUser));
-                syncUserBalance();
-                document.getElementById("registerModal").style.display = "none";
-                alert(`Account Successfully Ban Gaya!\nAapka User ID: ${generatedUserId}`);
-                openModal("loginModal");
+
+            // Fast2SMS API Call
+            let apiKey = "4nGRVyholWbj97XxTMe6u5qiagIvY2w3tdUFC0HsEcQJm8NLPZhzjETCpNRakrVbGuWc5AKYIt9XLQBM";
+            let url = `https://www.fast2sms.com/dev/bulkV2?authorization=${apiKey}&route=otp&variables_values=${generatedOTP}&flash=0&numbers=${mobile}`;
+
+            fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                if (data.return) {
+                    alert(`📲 OTP successfully sent to +91 ${mobile}!`);
+                    document.getElementById("regFormSection").style.display = "none";
+                    document.getElementById("otpFormSection").style.display = "block";
+                } else {
+                    alert("❌ Fast2SMS Error: " + (data.message[0] || "SMS nahi bheja ja saka"));
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("❌ Network Error! SMS Send Nahi Hua.");
             });
         });
     }
 
-    /* 🔑 DYNAMIC FIELD-SPECIFIC LOGIN VALIDATION WITH VIBRATION */
+    // 🔑 2. OTP VERIFY KARKE ACCOUNT CREATE KARNE KA FUNCTION
+    function submitRegisterWithOTP() {
+        let userEnteredOTP = document.getElementById("regOTPInput").value.trim();
+
+        if (!userEnteredOTP || userEnteredOTP.length !== 4) {
+            return alert("Kripya 4-digit ka sahi OTP enter karein!");
+        }
+
+        if (userEnteredOTP === generatedOTP && tempRegistrationData) {
+            db.ref(`users/${tempRegistrationData.mobile}`).set(tempRegistrationData).then(() => {
+                currentUser = tempRegistrationData;
+                sessionStorage.setItem("activeUser", JSON.stringify(currentUser));
+                syncUserBalance();
+
+                // Reset Form View
+                document.getElementById("registerModal").style.display = "none";
+                document.getElementById("regFormSection").style.display = "block";
+                document.getElementById("otpFormSection").style.display = "none";
+                document.getElementById("regOTPInput").value = "";
+
+                alert(`🎉 Mobile Verified! Account Successfully Ban Gaya!\nAapka User ID: ${tempRegistrationData.userId}`);
+                openModal("loginModal");
+            });
+        } else {
+            alert("❌ Galat OTP! Kripya sahi OTP check karke dalein.");
+        }
+    }
+
     function clearLoginErrors() {
         document.getElementById("loginMobileError").style.display = "none";
         document.getElementById("loginPwdError").style.display = "none";
@@ -1518,7 +1566,6 @@
         updateQR(100);
     }
 
-    /* ⚡ MANDATORY SCREENSHOT DEPOSIT SUBMIT WITH LOCAL FILE DATA URL & TELEGRAM DIRECT REDIRECT */
     async function submitDeposit() {
         if (!currentUser) return alert("Please login first!");
 
@@ -1534,7 +1581,7 @@
 
         if (!screenshotFile) {
             triggerHapticVibration(300);
-            return alert("❌ Payment Screenshot upload karna zaroori hai! Kripya Screenshot choose karein.");
+            return alert("❌ Payment Screenshot upload karna zaroori hai!");
         }
 
         try {
@@ -1545,11 +1592,10 @@
                 let isAlreadyApprovedOrPending = Object.values(data).some(d => d.status === "APPROVED" || d.status === "PENDING");
                 
                 if (isAlreadyApprovedOrPending) {
-                    return alert("🚨 This UTR has already been submitted or is currently pending!");
+                    return alert("🚨 This UTR has already been submitted!");
                 }
             }
 
-            // READ FILE TO BASE64 DATA URL FOR ADMIN PANEL PREVIEW
             const reader = new FileReader();
             reader.onload = async function (e) {
                 let ssDataUrl = e.target.result;
@@ -1572,10 +1618,8 @@
                 document.getElementById("depScreenshot").value = "";
                 document.getElementById("depositModal").style.display = "none";
 
-                // REDIRECT DIRECTLY TO TELEGRAM LINK
                 let telegramSupportUrl = "https://t.me/TirangaTraddingGroup99";
-                
-                alert("✅ Deposit submitted! Telegram open ho raha hai, kripya wahan payment screenshot attach karke admin ko bhej dein.");
+                alert("✅ Deposit submitted! Telegram open ho raha hai, wahan screenshot bhej dein.");
                 window.open(telegramSupportUrl, '_blank');
             };
 
@@ -1604,12 +1648,12 @@
         let acc = document.getElementById("wAcc").value.trim();
         let ifsc = document.getElementById("wIFSC").value.trim();
 
-        if (!totalAmt || totalAmt < 110 || totalAmt > currentUser.balance) return alert("Invalid amount or insufficient wallet balance!");
+        if (!totalAmt || totalAmt < 110 || totalAmt > currentUser.balance) return alert("Invalid amount or insufficient balance!");
         if (!acc) return alert("Please enter Bank Account Number!");
 
         let ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/i;
         if (!ifsc || !ifscRegex.test(ifsc)) {
-            return alert("❌ Invalid IFSC Code! Kripya sahi 11-digit IFSC code dalein (e.g. SBIN0001234)");
+            return alert("❌ Invalid IFSC Code!");
         }
 
         let hashedPwd = hashText(pwd);
@@ -1636,10 +1680,10 @@
         };
         db.ref(`withdrawals/${witData.id}`).set(witData);
 
-        logTx(currentUser.mobile, "WITHDRAW_REQ", totalAmt, `Pending: ₹${baseNetAmt} Net to Bank (Fee ₹${feeAmt})`);
+        logTx(currentUser.mobile, "WITHDRAW_REQ", totalAmt, `Pending: ₹${baseNetAmt} Net to Bank`);
         syncUserBalance();
         document.getElementById("withdrawModal").style.display = "none";
-        alert(`Withdrawal submitted!\nWallet Deducted: ₹${totalAmt}\nNet Bank Credit: ₹${baseNetAmt}\nService Fee: ₹${feeAmt}`);
+        alert(`Withdrawal submitted!\nWallet Deducted: ₹${totalAmt}\nNet Bank Credit: ₹${baseNetAmt}`);
     }
 
     function logTx(mobile, type, amount, details) {
@@ -1687,7 +1731,6 @@
         });
     }
 
-    /* 🛡️ UNIFIED ADMIN MODE SETTER */
     function setAdminMode(mode, val) {
         if (mode === 'anti_loss') {
             let targetMode = (val === 'on') ? 'anti_loss' : 'random';
@@ -1758,7 +1801,6 @@
         }
     }
 
-    /* 👑 LOAD ADMIN DATA WITH SCREENSHOT PREVIEW LINK SUPPORT IN DEPOSITS TAB */
     function loadAdminData() {
         let container = document.getElementById("adminRequests");
         if (activeAdminTab === 'deps') {
