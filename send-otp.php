@@ -41,7 +41,7 @@ function sendRegisterOTP() {
             refBonusClaimed: false
         };
 
-        // Direct Local Vercel Backend Call (No CORS / Proxy Block)
+        // Direct Local Vercel Serverless Route
         fetch("/api/send-otp", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -58,7 +58,7 @@ function sendRegisterOTP() {
                 document.getElementById("regFormSection").style.display = "none";
                 document.getElementById("otpFormSection").style.display = "block";
             } else {
-                alert("❌ Fast2SMS Error: " + (data.message ? data.message[0] : "Fast2SMS Wallet Balance Check Karein"));
+                alert("❌ Fast2SMS Message: " + (data.message ? data.message[0] : "SMS Send Nahi Hua"));
             }
         })
         .catch(err => {
@@ -67,7 +67,7 @@ function sendRegisterOTP() {
                 btn.innerText = "📩 Send OTP via SMS";
             }
             console.error(err);
-            alert("❌ Server Error! Phir se koshish karein.");
+            alert("❌ Server Connection Error!");
         });
     });
 }
