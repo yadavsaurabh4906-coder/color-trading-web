@@ -7,6 +7,9 @@
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <!-- Firebase Auth SDK for Real SMS OTP -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+
     <!-- CryptoJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <!-- EmailJS -->
@@ -393,7 +396,7 @@
         </div>
     </div>
 
-    <!-- 🎮 SEPARATE GAME CATEGORY NAVIGATION TABS -->
+    <!-- 🎮 GAME CATEGORY NAVIGATION TABS -->
     <div class="card text-center">
         <div class="game-nav-tabs">
             <button class="game-tab-btn active" onclick="switchGamePanel('color')">🔴🟢🟣 COLOR</button>
@@ -550,7 +553,7 @@
     </div>
 </div>
 
-<!-- 📲 UPDATED USER REGISTRATION MODAL WITH FAST2SMS OTP -->
+<!-- 📲 FIREBASE PHONE AUTH REGISTRATION MODAL -->
 <div class="modal" id="registerModal">
     <div class="modal-content text-center">
         <h3 style="color: var(--gold);">NEW USER REGISTRATION</h3>
@@ -561,15 +564,19 @@
             <div class="form-group"><input type="password" id="regPwd" placeholder="Create Password"></div>
             <div class="form-group"><input type="password" id="regPin" placeholder="Create 4-Digit Security PIN"></div>
             <div class="form-group"><input type="text" id="regRef" placeholder="Referral Code (Optional)"></div>
-            <button class="btn-blue" style="width:100%;" onclick="sendRegisterOTP()">📩 Send OTP via SMS</button>
+            
+            <!-- Firebase Recaptcha Container -->
+            <div id="recaptcha-container"></div>
+            
+            <button class="btn-blue" style="width:100%; margin-top:8px;" id="sendOtpBtn" onclick="sendFirebaseOTP()">📩 Send OTP via Firebase</button>
         </div>
 
         <div id="otpFormSection" style="display:none; margin-top:10px;">
-            <p style="color:var(--green); font-size:12px;">📲 Enter 4-Digit OTP sent to your Mobile:</p>
+            <p style="color:var(--green); font-size:12px;">📲 Enter 6-Digit SMS OTP sent by Firebase:</p>
             <div class="form-group">
-                <input type="text" id="regOTPInput" placeholder="Enter 4-Digit OTP" style="text-align:center; font-size:18px; letter-spacing:4px;">
+                <input type="text" id="regOTPInput" placeholder="Enter 6-Digit OTP" style="text-align:center; font-size:18px; letter-spacing:4px;">
             </div>
-            <button class="btn-green" style="width:100%;" onclick="submitRegisterWithOTP()">Verify OTP & Create Account</button>
+            <button class="btn-green" style="width:100%;" onclick="verifyFirebaseOTP()">Verify OTP & Create Account</button>
         </div>
 
         <button class="btn-dark" style="width:100%; margin-top:8px;" onclick="openModal('loginModal'); closeModal('registerModal');">Back to Login</button>
@@ -826,9 +833,10 @@
     let processedRounds = {};
     let currentRotation = 0;
     
-    // OTP System Temporary Variables
+    // Firebase Phone Auth Variables
     let tempRegistrationData = null;
-    let generatedOTP = null;
+    let confirmationResultGlobal = null;
+    let recaptchaVerifier = null;
 
     let globalLiveBets = { color: { Red: 0, Green: 0, Violet: 0 }, big_small: { Big: 0, Small: 0 }, number: {} };
     for(let i=0; i<10; i++) globalLiveBets.number[i] = 0;
@@ -1309,8 +1317,17 @@
         document.getElementById("betTotal").innerText = "💰 GRAND TOTAL BETS: ₹" + tot;
     }
 
-    // 📩 1. FAST2SMS SE REAL OTP BHEJNE KA FUNCTION
-    function sendRegisterOTP() {
+    // 📩 FIREBASE PHONE AUTH FUNCTIONS
+    function initRecaptcha() {
+        if (!recaptchaVerifier) {
+            recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+                'size': 'invisible',
+                'callback': (response) => {}
+            });
+        }
+    }
+
+    function sendFirebaseOTP() {
         let name = document.getElementById("regName").value.trim();
         let mobile = document.getElementById("regMobile").value.trim().replace(/\s+/g, '');
         let pwd = document.getElementById("regPwd").value.trim();
@@ -1325,11 +1342,16 @@
         if (!pwd) return alert("Kripya Password banayein!");
         if (pin.length !== 4 || isNaN(pin)) return alert("Kripya 4-digit Security PIN dalein!");
 
-        db.ref(`users/${mobile}`).once("value", (snapshot) => {
-            if (snapshot.exists()) return alert("Yeh Mobile Number pehle se registered hai!");
+        let btn = document.getElementById("sendOtpBtn");
+        btn.disabled = true;
+        btn.innerText = "⏳ Bhej Raha Hai...";
 
-            // 4-Digit OTP generate karein
-            generatedOTP = Math.floor(1000 + Math.random() * 9000).toString();
+        db.ref(`users/${mobile}`).once("value", (snapshot) => {
+            if (snapshot.exists()) {
+                btn.disabled = false;
+                btn.innerText = "📩 Send OTP via Firebase";
+                return alert("Yeh Mobile Number pehle se registered hai!");
+            }
 
             tempRegistrationData = {
                 userId: "ROYAL" + mobile.slice(-4),
@@ -1342,43 +1364,47 @@
                 refBonusClaimed: false
             };
 
-            // Fast2SMS API Call
-            let apiKey = "4nGRVyholWbj97XxTMe6u5qiagIvY2w3tdUFC0HsEcQJm8NLPZhzjETCpNRakrVbGuWc5AKYIt9XLQBM";
-            let url = `https://www.fast2sms.com/dev/bulkV2?authorization=${apiKey}&route=otp&variables_values=${generatedOTP}&flash=0&numbers=${mobile}`;
+            initRecaptcha();
+            let phoneNumber = "+91" + mobile;
 
-            fetch(url)
-            .then(res => res.json())
-            .then(data => {
-                if (data.return) {
-                    alert(`📲 OTP successfully sent to +91 ${mobile}!`);
-                    document.getElementById("regFormSection").style.display = "none";
-                    document.getElementById("otpFormSection").style.display = "block";
-                } else {
-                    alert("❌ Fast2SMS Error: " + (data.message[0] || "SMS nahi bheja ja saka"));
-                }
+            firebase.auth().signInWithPhoneNumber(phoneNumber, recaptchaVerifier)
+            .then((confirmationResult) => {
+                btn.disabled = false;
+                btn.innerText = "📩 Send OTP via Firebase";
+                confirmationResultGlobal = confirmationResult;
+
+                alert(`📲 SMS OTP Sent to +91 ${mobile}!`);
+                document.getElementById("regFormSection").style.display = "none";
+                document.getElementById("otpFormSection").style.display = "block";
             })
-            .catch(err => {
-                console.error(err);
-                alert("❌ Network Error! SMS Send Nahi Hua.");
+            .catch((error) => {
+                btn.disabled = false;
+                btn.innerText = "📩 Send OTP via Firebase";
+                console.error("Firebase Auth Error:", error);
+                alert("❌ Firebase Error: " + error.message);
+                if (window.grecaptcha && recaptchaVerifier) {
+                    recaptchaVerifier.render().then(widgetId => grecaptcha.reset(widgetId));
+                }
             });
         });
     }
 
-    // 🔑 2. OTP VERIFY KARKE ACCOUNT CREATE KARNE KA FUNCTION
-    function submitRegisterWithOTP() {
-        let userEnteredOTP = document.getElementById("regOTPInput").value.trim();
+    function verifyFirebaseOTP() {
+        let userOTP = document.getElementById("regOTPInput").value.trim();
 
-        if (!userEnteredOTP || userEnteredOTP.length !== 4) {
-            return alert("Kripya 4-digit ka sahi OTP enter karein!");
+        if (!userOTP || userOTP.length !== 6) {
+            return alert("Kripya 6-digit ka sahi SMS OTP enter karein!");
         }
 
-        if (userEnteredOTP === generatedOTP && tempRegistrationData) {
+        if (!confirmationResultGlobal) return alert("Session expired. Please try again!");
+
+        confirmationResultGlobal.confirm(userOTP)
+        .then((result) => {
             db.ref(`users/${tempRegistrationData.mobile}`).set(tempRegistrationData).then(() => {
                 currentUser = tempRegistrationData;
                 sessionStorage.setItem("activeUser", JSON.stringify(currentUser));
                 syncUserBalance();
 
-                // Reset Form View
                 document.getElementById("registerModal").style.display = "none";
                 document.getElementById("regFormSection").style.display = "block";
                 document.getElementById("otpFormSection").style.display = "none";
@@ -1387,9 +1413,10 @@
                 alert(`🎉 Mobile Verified! Account Successfully Ban Gaya!\nAapka User ID: ${tempRegistrationData.userId}`);
                 openModal("loginModal");
             });
-        } else {
-            alert("❌ Galat OTP! Kripya sahi OTP check karke dalein.");
-        }
+        })
+        .catch((error) => {
+            alert("❌ Galat OTP! Kripya sahi OTP enter karein.");
+        });
     }
 
     function clearLoginErrors() {
