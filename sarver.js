@@ -9,7 +9,7 @@ admin.initializeApp({
 });
 
 const db = admin.database();
-const ROUND_DURATION = 40;
+const ROUND_DURATION = 30; // ⚡ Updated to 30 Seconds to match index.html
 let processedRounds = {};
 
 console.log("🚀 Server-Side Execution Engine Started...");
@@ -31,7 +31,11 @@ async function evaluateServerRound(roundId) {
     const betsSnapshot = await db.ref("global_live_bets").once("value");
     const bets = betsSnapshot.val() || {};
 
-    let globalLiveBets = { color: { Red: 0, Green: 0, Violet: 0 }, number: {} };
+    let globalLiveBets = { 
+        color: { Red: 0, Green: 0, Violet: 0 }, 
+        big_small: { Big: 0, Small: 0 }, 
+        number: {} 
+    };
     for(let i=0; i<10; i++) globalLiveBets.number[i] = 0;
 
     Object.values(bets).forEach(uBets => {
@@ -39,6 +43,10 @@ async function evaluateServerRound(roundId) {
             globalLiveBets.color.Red += (uBets.color.Red || 0);
             globalLiveBets.color.Green += (uBets.color.Green || 0);
             globalLiveBets.color.Violet += (uBets.color.Violet || 0);
+        }
+        if (uBets.big_small) {
+            globalLiveBets.big_small.Big += (uBets.big_small.Big || 0);
+            globalLiveBets.big_small.Small += (uBets.big_small.Small || 0);
         }
         if (uBets.number) {
             for(let i=0; i<10; i++) globalLiveBets.number[i] += (uBets.number[i] || 0);
@@ -49,12 +57,17 @@ async function evaluateServerRound(roundId) {
     let payouts = {};
     for (let n = 0; n < 10; n++) {
         let col = (n===1||n===3||n===7||n===9) ? "Green" : ((n===2||n===4||n===6||n===8) ? "Red" : "Violet");
-        payouts[n] = (globalLiveBets.color[col] * 1.9) + (globalLiveBets.number[n] * 9.0);
+        let size = n >= 5 ? "Big" : "Small";
+
+        payouts[n] = (globalLiveBets.color[col] * 1.9) + 
+                     (globalLiveBets.big_small[size] * 1.9) + 
+                     (globalLiveBets.number[n] * 9.0);
     }
     let minPayout = Math.min(...Object.values(payouts));
     let bestNums = Object.keys(payouts).filter(k => payouts[k] === minPayout);
     let winningNum = parseInt(bestNums[Math.floor(Math.random() * bestNums.length)]);
     let winningColor = (winningNum===1||winningNum===3||winningNum===7||winningNum===9) ? "Green" : ((winningNum===2||winningNum===4||winningNum===6||winningNum===8) ? "Red" : "Violet");
+    let winningSize = winningNum >= 5 ? "Big" : "Small";
 
     // Write Final Result to Firebase
     await db.ref(`global_results/${roundId}`).set({ number: winningNum, color: winningColor, timestamp: Date.now() });
@@ -70,6 +83,9 @@ async function evaluateServerRound(roundId) {
         }
         if (uBet.color && uBet.color[winningColor]) {
             win = true; winnings += Math.round(uBet.color[winningColor] * 1.9);
+        }
+        if (uBet.big_small && uBet.big_small[winningSize]) {
+            win = true; winnings += Math.round(uBet.big_small[winningSize] * 1.9);
         }
 
         if (win && winnings > 0) {
