@@ -1,4 +1,4 @@
-function sendRegisterOTP() {
+function sendFirebaseOTP() {
     let name = document.getElementById("regName").value.trim();
     let mobile = document.getElementById("regMobile").value.trim().replace(/\s+/g, '');
     let pwd = document.getElementById("regPwd").value.trim();
@@ -14,21 +14,17 @@ function sendRegisterOTP() {
     if (pin.length !== 4 || isNaN(pin)) return alert("Kripya 4-digit Security PIN dalein!");
 
     let btn = document.getElementById("sendOtpBtn");
-    if(btn) {
-        btn.disabled = true;
-        btn.innerText = "⏳ Bhej Raha Hai...";
-    }
+    btn.disabled = true;
 
     db.ref(`users/${mobile}`).once("value", (snapshot) => {
+        btn.disabled = false;
+
         if (snapshot.exists()) {
-            if(btn) {
-                btn.disabled = false;
-                btn.innerText = "📩 Send OTP via SMS";
-            }
             return alert("Yeh Mobile Number pehle se registered hai!");
         }
 
-        generatedOTP = Math.floor(1000 + Math.random() * 9000).toString();
+        // Generate 6-digit OTP locally for local testing
+        generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
 
         tempRegistrationData = {
             userId: "ROYAL" + mobile.slice(-4),
@@ -41,33 +37,8 @@ function sendRegisterOTP() {
             refBonusClaimed: false
         };
 
-        // Direct Local Vercel Serverless Route
-        fetch("/api/send-otp", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ mobile: mobile, otp: generatedOTP })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if(btn) {
-                btn.disabled = false;
-                btn.innerText = "📩 Send OTP via SMS";
-            }
-            if (data.return) {
-                alert(`📲 OTP successfully sent to +91 ${mobile}!`);
-                document.getElementById("regFormSection").style.display = "none";
-                document.getElementById("otpFormSection").style.display = "block";
-            } else {
-                alert("❌ Fast2SMS Message: " + (data.message ? data.message[0] : "SMS Send Nahi Hua"));
-            }
-        })
-        .catch(err => {
-            if(btn) {
-                btn.disabled = false;
-                btn.innerText = "📩 Send OTP via SMS";
-            }
-            console.error(err);
-            alert("❌ Server Connection Error!");
-        });
+        alert(`📲 Local Verification OTP: ${generatedOTP}`);
+        document.getElementById("regFormSection").style.display = "none";
+        document.getElementById("otpFormSection").style.display = "block";
     });
 }
