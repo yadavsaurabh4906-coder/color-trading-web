@@ -4,12 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>👑 ROYAL COLOR, BIG/SMALL & NUMBER TRADING VIP</title>
-    <!-- Firebase Core & Database SDKs -->
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-    <!-- Firebase Auth SDK for Real SMS OTP -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-
     <!-- CryptoJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <!-- EmailJS -->
@@ -553,32 +550,18 @@
     </div>
 </div>
 
-<!-- 📲 FIREBASE PHONE AUTH REGISTRATION MODAL -->
+<!-- 🚀 DIRECT 1-CLICK REGISTRATION MODAL (NO OTP REQUIRED) -->
 <div class="modal" id="registerModal">
     <div class="modal-content text-center">
         <h3 style="color: var(--gold);">NEW USER REGISTRATION</h3>
         
-        <div id="regFormSection">
-            <div class="form-group"><input type="text" id="regName" placeholder="Full Name"></div>
-            <div class="form-group"><input type="text" id="regMobile" placeholder="10-Digit Mobile Number"></div>
-            <div class="form-group"><input type="password" id="regPwd" placeholder="Create Password"></div>
-            <div class="form-group"><input type="password" id="regPin" placeholder="Create 4-Digit Security PIN"></div>
-            <div class="form-group"><input type="text" id="regRef" placeholder="Referral Code (Optional)"></div>
-            
-            <!-- Firebase Recaptcha Container -->
-            <div id="recaptcha-container"></div>
-            
-            <button class="btn-blue" style="width:100%; margin-top:8px;" id="sendOtpBtn" onclick="sendFirebaseOTP()">📩 Send OTP via Firebase</button>
-        </div>
-
-        <div id="otpFormSection" style="display:none; margin-top:10px;">
-            <p style="color:var(--green); font-size:12px;">📲 Enter 6-Digit SMS OTP sent by Firebase:</p>
-            <div class="form-group">
-                <input type="text" id="regOTPInput" placeholder="Enter 6-Digit OTP" style="text-align:center; font-size:18px; letter-spacing:4px;">
-            </div>
-            <button class="btn-green" style="width:100%;" onclick="verifyFirebaseOTP()">Verify OTP & Create Account</button>
-        </div>
-
+        <div class="form-group"><input type="text" id="regName" placeholder="Full Name"></div>
+        <div class="form-group"><input type="text" id="regMobile" placeholder="10-Digit Mobile Number"></div>
+        <div class="form-group"><input type="password" id="regPwd" placeholder="Create Password"></div>
+        <div class="form-group"><input type="password" id="regPin" placeholder="Create 4-Digit Security PIN"></div>
+        <div class="form-group"><input type="text" id="regRef" placeholder="Referral Code (Optional)"></div>
+        
+        <button class="btn-green" style="width:100%; margin-top:8px;" id="regSubmitBtn" onclick="submitDirectRegister()">🚀 Create Account Instant</button>
         <button class="btn-dark" style="width:100%; margin-top:8px;" onclick="openModal('loginModal'); closeModal('registerModal');">Back to Login</button>
     </div>
 </div>
@@ -832,11 +815,6 @@
     let currentRoundId = 0;
     let processedRounds = {};
     let currentRotation = 0;
-    
-    // Firebase Phone Auth Variables
-    let tempRegistrationData = null;
-    let confirmationResultGlobal = null;
-    let recaptchaVerifier = null;
 
     let globalLiveBets = { color: { Red: 0, Green: 0, Violet: 0 }, big_small: { Big: 0, Small: 0 }, number: {} };
     for(let i=0; i<10; i++) globalLiveBets.number[i] = 0;
@@ -1317,17 +1295,8 @@
         document.getElementById("betTotal").innerText = "💰 GRAND TOTAL BETS: ₹" + tot;
     }
 
-    // 📩 FIREBASE PHONE AUTH FUNCTIONS
-    function initRecaptcha() {
-        if (!recaptchaVerifier) {
-            recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-                'size': 'invisible',
-                'callback': (response) => {}
-            });
-        }
-    }
-
-    function sendFirebaseOTP() {
+    // 🚀 DIRECT REGISTRATION (NO OTP VERIFICATION)
+    function submitDirectRegister() {
         let name = document.getElementById("regName").value.trim();
         let mobile = document.getElementById("regMobile").value.trim().replace(/\s+/g, '');
         let pwd = document.getElementById("regPwd").value.trim();
@@ -1342,80 +1311,41 @@
         if (!pwd) return alert("Kripya Password banayein!");
         if (pin.length !== 4 || isNaN(pin)) return alert("Kripya 4-digit Security PIN dalein!");
 
-        let btn = document.getElementById("sendOtpBtn");
+        let btn = document.getElementById("regSubmitBtn");
         btn.disabled = true;
-        btn.innerText = "⏳ Bhej Raha Hai...";
+        btn.innerText = "⏳ Account Ban Raha Hai...";
 
         db.ref(`users/${mobile}`).once("value", (snapshot) => {
             if (snapshot.exists()) {
                 btn.disabled = false;
-                btn.innerText = "📩 Send OTP via Firebase";
+                btn.innerText = "🚀 Create Account Instant";
                 return alert("Yeh Mobile Number pehle se registered hai!");
             }
 
-            tempRegistrationData = {
+            let newUserObj = {
                 userId: "ROYAL" + mobile.slice(-4),
-                name, mobile, 
-                pwd: hashText(pwd), 
+                name: name,
+                mobile: mobile,
+                pwd: hashText(pwd),
                 pin: hashText(pin),
-                balance: 0, 
+                balance: 0,
                 refCode: "REF" + mobile.slice(-4),
-                referredBy: refCode || null, 
+                referredBy: refCode || null,
                 refBonusClaimed: false
             };
 
-            initRecaptcha();
-            let phoneNumber = "+91" + mobile;
-
-            firebase.auth().signInWithPhoneNumber(phoneNumber, recaptchaVerifier)
-            .then((confirmationResult) => {
+            db.ref(`users/${mobile}`).set(newUserObj).then(() => {
                 btn.disabled = false;
-                btn.innerText = "📩 Send OTP via Firebase";
-                confirmationResultGlobal = confirmationResult;
-
-                alert(`📲 SMS OTP Sent to +91 ${mobile}!`);
-                document.getElementById("regFormSection").style.display = "none";
-                document.getElementById("otpFormSection").style.display = "block";
-            })
-            .catch((error) => {
-                btn.disabled = false;
-                btn.innerText = "📩 Send OTP via Firebase";
-                console.error("Firebase Auth Error:", error);
-                alert("❌ Firebase Error: " + error.message);
-                if (window.grecaptcha && recaptchaVerifier) {
-                    recaptchaVerifier.render().then(widgetId => grecaptcha.reset(widgetId));
-                }
-            });
-        });
-    }
-
-    function verifyFirebaseOTP() {
-        let userOTP = document.getElementById("regOTPInput").value.trim();
-
-        if (!userOTP || userOTP.length !== 6) {
-            return alert("Kripya 6-digit ka sahi SMS OTP enter karein!");
-        }
-
-        if (!confirmationResultGlobal) return alert("Session expired. Please try again!");
-
-        confirmationResultGlobal.confirm(userOTP)
-        .then((result) => {
-            db.ref(`users/${tempRegistrationData.mobile}`).set(tempRegistrationData).then(() => {
-                currentUser = tempRegistrationData;
+                btn.innerText = "🚀 Create Account Instant";
+                
+                currentUser = newUserObj;
                 sessionStorage.setItem("activeUser", JSON.stringify(currentUser));
                 syncUserBalance();
 
                 document.getElementById("registerModal").style.display = "none";
-                document.getElementById("regFormSection").style.display = "block";
-                document.getElementById("otpFormSection").style.display = "none";
-                document.getElementById("regOTPInput").value = "";
-
-                alert(`🎉 Mobile Verified! Account Successfully Ban Gaya!\nAapka User ID: ${tempRegistrationData.userId}`);
+                alert(`🎉 Congratulations ${name}!\nAapka Account Successfully Ban Gaya Hai!\nUser ID: ${newUserObj.userId}`);
                 openModal("loginModal");
             });
-        })
-        .catch((error) => {
-            alert("❌ Galat OTP! Kripya sahi OTP enter karein.");
         });
     }
 
@@ -1497,6 +1427,11 @@
             if (u) {
                 currentUser = u;
                 sessionStorage.setItem("activeUser", JSON.stringify(currentUser));
+                updateUserUI();
+            } else {
+                // If user account is removed by Admin from DB
+                sessionStorage.removeItem("activeUser");
+                currentUser = null;
                 updateUserUI();
             }
         });
@@ -1828,6 +1763,18 @@
         }
     }
 
+    // 🗑️ REMOVE / DELETE USER FUNCTION
+    function adminRemoveUser(mobile, name) {
+        if (confirm(`🚨 Are you sure you want to REMOVE user ${name} (+91 ${mobile})?\n\nIs user ka account delete ho jayega aur dobara login karne ke liye unhe Re-Register karna padega.`)) {
+            db.ref(`users/${mobile}`).remove().then(() => {
+                alert(`✅ User ${name} (+91 ${mobile}) deleted successfully!`);
+                loadAdminData();
+            }).catch(err => {
+                alert("❌ Fail to remove user: " + err.message);
+            });
+        }
+    }
+
     function loadAdminData() {
         let container = document.getElementById("adminRequests");
         if (activeAdminTab === 'deps') {
@@ -1911,8 +1858,9 @@
                         <td>+91 ${u.mobile}</td>
                         <td style="color:var(--green); font-weight:bold;">₹${u.balance || 0}</td>
                         <td>
-                            <button class="btn-green" style="padding:2px 6px; font-size:9px;" onclick="adminModifyBalance('${u.mobile}')">💰 Add/Cut ₹</button>
-                            <button class="btn-gold" style="padding:2px 6px; font-size:9px;" onclick="adminResetUserPassword('${u.mobile}')">Reset Pass</button>
+                            <button class="btn-green" style="padding:2px 5px; font-size:9px; margin-bottom:2px;" onclick="adminModifyBalance('${u.mobile}')">💰 Add/Cut ₹</button>
+                            <button class="btn-gold" style="padding:2px 5px; font-size:9px; margin-bottom:2px;" onclick="adminResetUserPassword('${u.mobile}')">Reset Pass</button>
+                            <button class="btn-red" style="padding:2px 5px; font-size:9px;" onclick="adminRemoveUser('${u.mobile}', '${u.name}')">🗑️ Remove User</button>
                         </td>
                     </tr>`;
                 });
