@@ -13,37 +13,61 @@ function sendRegisterOTP() {
     if (!pwd) return alert("Kripya Password banayein!");
     if (pin.length !== 4 || isNaN(pin)) return alert("Kripya 4-digit Security PIN dalein!");
 
-    db.ref(`users/${mobile}`).once("value", (snapshot) => {
-        if (snapshot.exists()) return alert("Yeh Mobile Number pehle se registered hai!");
+    let btn = document.getElementById("sendOtpBtn");
+    if(btn) {
+        btn.disabled = true;
+        btn.innerText = "⏳ Bhej Raha Hai...";
+    }
 
-        // 4-digit OTP generate karein
+    db.ref(`users/${mobile}`).once("value", (snapshot) => {
+        if (snapshot.exists()) {
+            if(btn) {
+                btn.disabled = false;
+                btn.innerText = "📩 Send OTP via SMS";
+            }
+            return alert("Yeh Mobile Number pehle se registered hai!");
+        }
+
         generatedOTP = Math.floor(1000 + Math.random() * 9000).toString();
 
         tempRegistrationData = {
             userId: "ROYAL" + mobile.slice(-4),
-            name, mobile, pwd: hashText(pwd), pin: hashText(pin),
-            balance: 0, refCode: "REF" + mobile.slice(-4),
-            referredBy: refCode || null, refBonusClaimed: false
+            name, mobile, 
+            pwd: hashText(pwd), 
+            pin: hashText(pin),
+            balance: 0, 
+            refCode: "REF" + mobile.slice(-4),
+            referredBy: refCode || null, 
+            refBonusClaimed: false
         };
 
-        // Fast2SMS Direct API Call
-        let apiKey = "4nGRVyholWbj97XxTMe6u5qiagIvY2w3tdUFC0HsEcQJm8NLPZhzjETCpNRakrVbGuWc5AKYIt9XLQBM";
-        let url = `https://www.fast2sms.com/dev/bulkV2?authorization=${apiKey}&route=otp&variables_values=${generatedOTP}&flash=0&numbers=${mobile}`;
-
-        fetch(url)
+        // Direct Local Vercel Backend Call (No CORS / Proxy Block)
+        fetch("/api/send-otp", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ mobile: mobile, otp: generatedOTP })
+        })
         .then(res => res.json())
         .then(data => {
+            if(btn) {
+                btn.disabled = false;
+                btn.innerText = "📩 Send OTP via SMS";
+            }
             if (data.return) {
-                alert(`📲 SMS Sent Successfully to +91 ${mobile}!`);
+                alert(`📲 OTP successfully sent to +91 ${mobile}!`);
                 document.getElementById("regFormSection").style.display = "none";
                 document.getElementById("otpFormSection").style.display = "block";
             } else {
-                alert("❌ SMS Error: " + (data.message[0] || "Fast2SMS Balance/Key Check karein"));
+                alert("❌ Fast2SMS Error: " + (data.message ? data.message[0] : "Fast2SMS Wallet Balance Check Karein"));
             }
         })
         .catch(err => {
+            if(btn) {
+                btn.disabled = false;
+                btn.innerText = "📩 Send OTP via SMS";
+            }
             console.error(err);
-            alert("❌ SMS Bhejne Me Network Error Aaya!");
+            alert("❌ Server Error! Phir se koshish karein.");
         });
     });
 }
